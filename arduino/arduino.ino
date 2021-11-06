@@ -2,15 +2,19 @@
 #include <HttpClient.h>
 #include <DallasTemperature.h>
 #include <WiFiEspAT.h>
+// #include "DeviceController/DeviceController.cpp";
 
 char ssid[] = "Chez du Roxanne";
 char password[] = "goofnugget";
+
 
 WiFiClient wifiClient;
 HttpClient httpClient(wifiClient);
 
 OneWire oneWire(4);
 DallasTemperature dTemp(&oneWire);
+
+const int SOIL_MOISTURE = A3;
 
 const char ON = LOW;
 const char OFF = HIGH;
@@ -25,36 +29,34 @@ void log(String value) {
 
 void setup() {
   // put your setup code here, to run once:
-  // Serial.begin(9600);
+
+  // DeviceController heater(4);
 
   pinMode(3, OUTPUT); // relay 1
   setRelay1(OFF);
   pinMode(4, INPUT); // temp sensor
+  pinMode(SOIL_MOISTURE, INPUT); // soil moisture
 
-  // Serial.begin(115200); // debugging
-  // Serial3.begin(115200); // start wifi chip
   Serial.begin(9600);
-  Serial1.begin(115200);
-  Serial.println("Starting wifi chip");
-  WiFi.init(&Serial1); // start wifi
+  Serial1.begin(115200);  // start wifi chip
+  Serial.println("new");
 
-  // Connect to WiFi
-  Serial.println(WiFi.status() == WL_CONNECTED ? "connected" : "not connected");
+  // Serial.println("Starting wifi chip");
+  //
+  // WiFi.init(&Serial1); // start wifi
+  //
+  // // Connect to WiFi
+  // if (WiFi.status() != WL_CONNECTED) {
+  //   Serial.println("Connecting to WiFi...");
+  //
+  //   WiFi.begin(ssid, password); // open wifi connection
+  //
+  //   Serial.println("Connected to WiFi");
+  // }
+  //
+  // httpClient.get("http://192.168.0.143", "/index.html");
 
-  if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("Connecting to WiFi...");
-
-    WiFi.begin(ssid, password); // open wifi connection
-
-    Serial.println("Connected to WiFi");
-  }
-
-
-
-
-  httpClient.get("http://192.168.0.143", "/index.html");
-
-  Serial.println("got logo");
+  Serial.println("got index.html");
 
   // char response[];
   //
@@ -65,9 +67,6 @@ void setup() {
 
   Serial.print("\n");
 
-  // Serial.print(response);
-
-  Serial.println("after while");
 }
 
 void setRelay1(char value) {
@@ -80,19 +79,24 @@ float getTemperature() {
   return dTemp.getTempFByIndex(0);
 }
 
+float getSoilMoisture() {
+  return analogRead(SOIL_MOISTURE);
+}
+
 
 void loop() {
   // put your main code here, to run repeatedly:
-  // current = (current == HIGH ? LOW : HIGH);
-  // setRelay1(current);
-  // setRelay1(current);
-  // Serial.println("wut");
-  // setRelay1(ON);
 
   float tempF = getTemperature();
+
+  Serial.print("temp (f): ");
   Serial.println(tempF);
 
-  setRelay1(tempF < 76 ? ON : OFF);
+  Serial.print("soil moisture: ");
+  Serial.println(getSoilMoisture());
+
+
+  setRelay1(tempF < 70 ? ON : OFF);
 
   delay(1000);
 }
