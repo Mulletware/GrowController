@@ -1,18 +1,22 @@
 #include <OneWire.h>
-#include <HttpClient.h>
 #include <DallasTemperature.h>
 #include <WiFiEspAT.h>
-// #include "DeviceController/DeviceController.cpp";
+#include "HttpClient-2.2.0/HttpClient.cpp";
+#include "DeviceController/DeviceController.cpp";
+#include "Sensor/Sensor.cpp";
+#include "TemperatureSensor/TemperatureSensor.cpp";
+#include "TemperatureSensor/enums.h";
+#include "SoilMoistureSensor/SoilMoistureSensor.cpp";
 
 char ssid[] = "Chez du Roxanne";
 char password[] = "goofnugget";
-
 
 WiFiClient wifiClient;
 HttpClient httpClient(wifiClient);
 
 OneWire oneWire(4);
 DallasTemperature dTemp(&oneWire);
+
 
 const int SOIL_MOISTURE = A3;
 
@@ -27,15 +31,18 @@ void log(String value) {
   }
 }
 
+TemperatureSensor tempSensor(4);
+SoilMoistureSensor soilMoistureSensor(A3);
+DeviceController heater();
+
 void setup() {
   // put your setup code here, to run once:
 
-  // DeviceController heater(4);
+
 
   pinMode(3, OUTPUT); // relay 1
   setRelay1(OFF);
-  pinMode(4, INPUT); // temp sensor
-  pinMode(SOIL_MOISTURE, INPUT); // soil moisture
+  // pinMode(4, INPUT); // temp sensor
 
   Serial.begin(9600);
   Serial1.begin(115200);  // start wifi chip
@@ -59,7 +66,7 @@ void setup() {
   Serial.println("got index.html");
 
   // char response[];
-  //
+
   while (httpClient.available()) {
     char c = httpClient.read();
     Serial.print(c);
@@ -73,30 +80,18 @@ void setRelay1(char value) {
   digitalWrite(3, value);
 }
 
-float getTemperature() {
-
-  dTemp.requestTemperatures();
-  return dTemp.getTempFByIndex(0);
-}
-
-float getSoilMoisture() {
-  return analogRead(SOIL_MOISTURE);
-}
-
-
 void loop() {
   // put your main code here, to run repeatedly:
 
-  float tempF = getTemperature();
+  tempSensor.update();
+  Serial.print("tempSensor->getValue(): ");
+  Serial.println(tempSensor.getValue());
 
-  Serial.print("temp (f): ");
-  Serial.println(tempF);
+  soilMoistureSensor.update();
+  Serial.print("soilMoistureSensor->getValue(): ");
+  Serial.println(soilMoistureSensor.getValue());
 
-  Serial.print("soil moisture: ");
-  Serial.println(getSoilMoisture());
-
-
-  setRelay1(tempF < 70 ? ON : OFF);
+  setRelay1(tempSensor.getValue() < 70 ? ON : OFF);
 
   delay(1000);
 }
