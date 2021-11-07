@@ -1,13 +1,15 @@
-#include "./enums.h"
 #ifndef SENSOR_H
 #define SENSOR_H
+#include "../PortType.h"
+
+using namespace PortType;
 
 namespace Sensor {
 
   class Sensor
   {
     public:
-      Sensor(int inputChannel, inputTypes inputType)
+      Sensor(int inputChannel, PortType::PortType inputType = PortType::PortType::digital)
       {
         this->inputChannel = inputChannel;
         this->inputType = inputType;
@@ -31,7 +33,7 @@ namespace Sensor {
       };
 
     private:
-      inputTypes inputType;
+      PortType::PortType inputType;
       int inputChannel;
       int currentValue;
   };

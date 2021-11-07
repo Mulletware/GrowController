@@ -3,10 +3,10 @@
 #include <WiFiEspAT.h>
 #include "HttpClient-2.2.0/HttpClient.cpp";
 #include "DeviceController/DeviceController.cpp";
-#include "Sensor/Sensor.cpp";
 #include "TemperatureSensor/TemperatureSensor.cpp";
 #include "TemperatureSensor/enums.h";
 #include "SoilMoistureSensor/SoilMoistureSensor.cpp";
+#include "Relay/Relay.cpp";
 
 char ssid[] = "Chez du Roxanne";
 char password[] = "goofnugget";
@@ -20,9 +20,6 @@ DallasTemperature dTemp(&oneWire);
 
 const int SOIL_MOISTURE = A3;
 
-const char ON = LOW;
-const char OFF = HIGH;
-
 bool debug = true;
 
 void log(String value) {
@@ -33,7 +30,8 @@ void log(String value) {
 
 TemperatureSensor tempSensor(4);
 SoilMoistureSensor soilMoistureSensor(A3);
-DeviceController heater();
+
+Relay heater(3);
 
 void setup() {
   // put your setup code here, to run once:
@@ -41,7 +39,7 @@ void setup() {
 
 
   pinMode(3, OUTPUT); // relay 1
-  setRelay1(OFF);
+  setRelay1(HIGH);
   // pinMode(4, INPUT); // temp sensor
 
   Serial.begin(9600);
@@ -91,7 +89,11 @@ void loop() {
   Serial.print("soilMoistureSensor->getValue(): ");
   Serial.println(soilMoistureSensor.getValue());
 
-  setRelay1(tempSensor.getValue() < 70 ? ON : OFF);
+  if (tempSensor.getValue() < 70) {
+    heater.turnOn();
+  } else {
+    heater.turnOff();
+  }
 
   delay(1000);
 }

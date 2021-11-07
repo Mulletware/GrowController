@@ -1,7 +1,7 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include "../Sensor/Sensor.h";
-#include "../Sensor/enums.h";
+#include "../PortType.h";
 #include "./enums.h";
 
 using namespace Sensor;
@@ -9,7 +9,7 @@ using namespace Sensor;
 class TemperatureSensor : Sensor {
   public:
     TemperatureSensor(int inputChannel, temperatureUnit unit = fahrenheit)
-      : Sensor(inputChannel, analog)
+      : Sensor(inputChannel, PortType::PortType::analog)
     {
       pinMode(inputChannel, INPUT);
       Serial.print("inputChannel: ");
