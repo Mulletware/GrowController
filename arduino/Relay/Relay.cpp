@@ -1,16 +1,19 @@
-#include "../Device/Device.h";
+#include "../Device/Device.h"
 
-class Relay : Device {
-  public:
-    Relay(int inputChannel) :
-      Device(inputChannel, PortType::digital, LOW, HIGH) { }
+namespace GrowController {
 
-    turnOn() {
-      Device::turnOn();
-    }
+  class Relay : Device {
+    public:
+      Relay(int inputChannel) :
+        Device(inputChannel, PortType::digital, LOW, HIGH) { }
 
-    turnOff() {
-      Device::turnOff();
-    }
+      turnOn() {
+        Device::turnOn();
+      }
 
-};
+      turnOff() {
+        Device::turnOff();
+      }
+  };
+
+}

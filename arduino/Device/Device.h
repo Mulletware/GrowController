@@ -3,56 +3,58 @@
 
 #include "../PortType.h"
 
-using namespace PortType;
+namespace GrowController {
 
-class Device
-{
-  public:
-    Device(
-      int outputChannel,
-      PortType::PortType output = PortType::analog,
-      char on = HIGH,
-      char off = LOW
-    ) {
-      pinMode(outputChannel, OUTPUT);
-      this->outputChannel = outputChannel;
-      this->output = output;
-      this->ON = on;
-      this->OFF = off;
-    }
-    Device(int outputChannel, char on, char off) {
-      Device(outputChannel, PortType::analog, on, off);
-    }
-
-    set(int value) {
-      Serial.print("value: ");
-      Serial.println(value);
-      switch (this->output) {
-        case PortType::analog:
-          analogWrite(this->outputChannel, value);
-          break;
-        case PortType::digital:
-          digitalWrite(this->outputChannel, value);
-          break;
+  class Device {
+    public:
+      Device(
+        int outputChannel,
+        PortType output = PortType::analog,
+        char on = HIGH,
+        char off = LOW
+      ) {
+        pinMode(outputChannel, OUTPUT);
+        this->outputChannel = outputChannel;
+        this->output = output;
+        this->ON = on;
+        this->OFF = off;
       }
-      this->currentValue = value;
-    }
+      Device(int outputChannel, char on, char off) {
+        Device(outputChannel, PortType::analog, on, off);
+      }
 
-    turnOn() {
-      set(this->ON);
-    }
+      set(int value) {
+        Serial.print("value: ");
+        Serial.println(value);
+        switch (this->output) {
+          case PortType::analog:
+            analogWrite(this->outputChannel, value);
+            break;
+          case PortType::digital:
+            digitalWrite(this->outputChannel, value);
+            break;
+        }
+        this->currentValue = value;
+      }
 
-    turnOff() {
-      set(this->OFF);
-    }
+      turnOn() {
+        set(this->ON);
+      }
+
+      turnOff() {
+        set(this->OFF);
+      }
 
 
-  private:
-    int outputChannel;
-    PortType::PortType output;
-    int currentValue;
-    char OFF;
-    char ON;
-};
+    private:
+      int outputChannel;
+      PortType output;
+      int currentValue;
+      char OFF;
+      char ON;
+  };
+
+
+}
 
 #endif

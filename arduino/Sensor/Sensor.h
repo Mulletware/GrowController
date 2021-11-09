@@ -2,20 +2,19 @@
 #define SENSOR_H
 #include "../PortType.h"
 
-using namespace PortType;
-
-namespace Sensor {
+namespace GrowController {
 
   class Sensor
   {
     public:
-      Sensor(int inputChannel, PortType::PortType inputType = PortType::PortType::digital)
+      Sensor(int inputChannel, PortType inputType = PortType::digital)
       {
         this->inputChannel = inputChannel;
         this->inputType = inputType;
         pinMode(inputChannel, INPUT); // temp sensor
       };
       Sensor(int inputChannel);
+      Sensor();
 
       void update() {
         switch(this->inputType) {
@@ -33,7 +32,7 @@ namespace Sensor {
       };
 
     private:
-      PortType::PortType inputType;
+      PortType inputType;
       int inputChannel;
       int currentValue;
   };

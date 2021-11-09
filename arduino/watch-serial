@@ -1,0 +1,3 @@
+#!/bin/zsh
+
+nodemon -w ../arduino -x "killall screen;killall putty; ./make; ./serial-monitor" -e "h cpp ino"
