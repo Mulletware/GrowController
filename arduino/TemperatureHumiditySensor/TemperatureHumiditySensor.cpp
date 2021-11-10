@@ -8,9 +8,6 @@
 
 namespace GrowController {
 
-  // TemperatureHumiditySensor::TemperatureHumiditySensor() : dht(inputChannel, DHT22) { }
-
-
   class TemperatureHumiditySensor : Sensor {
     public:
       TemperatureHumiditySensor(int inputChannel)
@@ -50,7 +47,6 @@ namespace GrowController {
 
           this->humidity = event.relative_humidity;
         }
-        // Serial.println(this->dht->humidity());
       }
 
       float getTemperatureC() {

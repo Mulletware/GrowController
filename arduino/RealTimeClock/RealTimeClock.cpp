@@ -15,9 +15,6 @@ namespace GrowController {
       RealTimeClock()
         : Sensor(SDA, PortType::analog)
       {
-        Serial.println("running RTC: ");
-
-
         // if(this->init()) {
         //   Serial.println("SetTime success");
         //   // RTC.set(now());
@@ -60,10 +57,6 @@ namespace GrowController {
 
       update() {
         time_t time = RTC.get();
-        Serial.print("second(time): ");
-        Serial.println(second(time));
-        Serial.print("minute(time): ");
-        Serial.println(minute(time));
       }
 
       float getValue() {

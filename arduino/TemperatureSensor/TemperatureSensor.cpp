@@ -18,20 +18,21 @@ namespace GrowController {
         DallasTemperature dTemp(&this->oneWire);
 
         this->dTemp = dTemp;
-        this->dTemp.requestTemperatures();
-        this->currentValue = this->dTemp.getTempFByIndex(0);
 
         this->setUnit(unit);
         this->update();
       }
 
       void update() {
-        dTemp.requestTemperatures();
-        currentValue = unit == celsius ? this->dTemp.getTempCByIndex(0) : this->dTemp.getTempFByIndex(0);
+        this->dTemp.requestTemperatures();
+
+        currentValue = unit == celsius
+          ? this->dTemp.getTempCByIndex(0)
+          : this->dTemp.getTempFByIndex(0);
       }
 
       void setUnit(temperatureUnit newUnit) {
-        unit = newUnit;
+        this->unit = newUnit;
         this->update();
       }
 
