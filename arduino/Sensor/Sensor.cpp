@@ -1,8 +1,1 @@
 
-
-namespace GrowController {
-  Sensor::Sensor() {
-    
-  }
-
-}

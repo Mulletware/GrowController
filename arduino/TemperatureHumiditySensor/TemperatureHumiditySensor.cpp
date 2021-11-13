@@ -1,8 +1,10 @@
+#ifndef TEMPERATURE_HUMIDITY_SENSOR
+#define TEMPERATURE_HUMIDITY_SENSOR
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
 #include <DHT_U.h>
-#include <math.h>
 #include "../PortType.h"
+#include "../util.h";
 
 #define DHTPIN A4;
 
@@ -11,7 +13,7 @@ namespace GrowController {
   class TemperatureHumiditySensor : Sensor {
     public:
       TemperatureHumiditySensor(int inputChannel)
-        : Sensor(inputChannel, PortType::analog),
+        : Sensor(inputChannel),
           dht(inputChannel, DHT22)
       {
         this->inputChannel = inputChannel;
@@ -62,14 +64,7 @@ namespace GrowController {
       }
 
       float getVPD() {
-        return
-          (610.7 * pow(10,
-            ((7.5 * this->temperature) /
-            (237.3 + this->temperature)))
-          )
-          / 1000
-          * (this->humidity / 100);
-
+        calculateVPD(this->temperature, this->humidity);
       }
 
     private:
@@ -81,3 +76,5 @@ namespace GrowController {
   };
 
 }
+
+#endif

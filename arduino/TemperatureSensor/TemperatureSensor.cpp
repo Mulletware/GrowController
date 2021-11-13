@@ -1,5 +1,6 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
+#include <movingAvgFloat.h>
 #include "../Sensor/Sensor.h";
 #include "../PortType.h";
 #include "./enums.h";
@@ -9,7 +10,7 @@ namespace GrowController {
   class TemperatureSensor : Sensor {
     public:
       TemperatureSensor(int inputChannel, temperatureUnit unit = fahrenheit)
-        : Sensor(inputChannel, PortType::analog)
+        : Sensor(inputChannel)
       {
         pinMode(inputChannel, INPUT);
         OneWire oneWire(inputChannel);
@@ -23,7 +24,7 @@ namespace GrowController {
         this->update();
       }
 
-      void update() {
+      update() {
         this->dTemp.requestTemperatures();
 
         currentValue = unit == celsius
@@ -31,13 +32,13 @@ namespace GrowController {
           : this->dTemp.getTempFByIndex(0);
       }
 
-      void setUnit(temperatureUnit newUnit) {
+      setUnit(temperatureUnit newUnit) {
         this->unit = newUnit;
         this->update();
       }
 
       float getValue() {
-        return this->currentValue;
+        return Sensor::getValue();
       }
 
     private:
@@ -45,6 +46,7 @@ namespace GrowController {
       DallasTemperature dTemp;
       float currentValue;
       temperatureUnit unit;
+
   };
 
 }

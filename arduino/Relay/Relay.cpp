@@ -1,3 +1,5 @@
+#ifndef RELAY
+#define RELAY
 #include "../Device/Device.h"
 
 namespace GrowController {
@@ -17,3 +19,5 @@ namespace GrowController {
   };
 
 }
+
+#endif

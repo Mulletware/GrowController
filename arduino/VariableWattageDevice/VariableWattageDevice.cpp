@@ -9,7 +9,7 @@ namespace GrowController {
         Device(outputChannel, PortType::digital),
         dimmer(outputChannel)
       {
-        this->dimmer.begin(NORMAL_MODE, ::OFF);
+        this->dimmer.begin(NORMAL_MODE, ON_OFF_typedef::OFF);
       }
 
       setPower(int power) {

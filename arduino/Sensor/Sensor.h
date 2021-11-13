@@ -1,5 +1,6 @@
 #ifndef SENSOR_H
 #define SENSOR_H
+#include <movingAvgFloat.h>
 #include "../PortType.h"
 
 namespace GrowController {
@@ -7,16 +8,18 @@ namespace GrowController {
   class Sensor
   {
     public:
-      Sensor(int inputChannel, PortType inputType = PortType::digital)
-      {
+      Sensor(
+        int inputChannel,
+        PortType inputType = PortType::analog,
+        int movingAverageCount = 20
+      ) : movingAverage(movingAverageCount) {
         this->inputChannel = inputChannel;
         this->inputType = inputType;
         pinMode(inputChannel, INPUT); // temp sensor
       };
-      Sensor(int inputChannel);
-      Sensor();
+      Sensor() : movingAverage(0) {}
 
-      void update() {
+      virtual update() {
         switch(this->inputType) {
           case analog:
             this->currentValue = analogRead(this->inputChannel);
@@ -27,17 +30,27 @@ namespace GrowController {
         }
       };
 
-      int getValue() {
+      virtual float getValue() {
+        // Serial.print("this->currentValue: ");
+        // Serial.println(this->currentValue);
+
         return this->currentValue;
       };
+
+      virtual float getMovingAverage() {
+        return this->movingAverage.getAvg();
+      }
+
+      setInputChannel(int inputChannel) {
+        this->inputChannel = inputChannel;
+      }
 
     private:
       PortType inputType;
       int inputChannel;
-      int currentValue;
+      float currentValue;
+      movingAvgFloat movingAverage;
   };
-
-
 }
 
 #endif

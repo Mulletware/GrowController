@@ -1,17 +1,13 @@
 #include "GrowController/GrowController.cpp"
 // #include "Wifi/Wifi.cpp"
 
-#include <RBDdimmer.h>
-
-dimmerLamp dimb(30);
-
 using namespace GrowController;
 
 char ssid[] = "Chez du Roxanne";
 char password[] = "goofnugget";
 
 
-GrowController::GrowController *growController;
+GrowController::GrowController *growController; // created as pointer so it can be "newed" later, check this assumption
 
 void setup() {
   // startWifi(*ssid, *password);
@@ -22,6 +18,7 @@ void setup() {
 
   growController = new GrowController::GrowController();
   growController->setup();
+  growController->setTargetTemp(70);
   // no serial.print statements can go here
 }
 
@@ -30,13 +27,12 @@ int currentLoop = 0;
 
 void loop() {
 
+  // put your main code here, to run repeatedly:
   Serial.print("looping ");
   Serial.println(currentLoop++);
-  // put your main code here, to run repeatedly:
   growController->update();
-  // dimmer.setPower(50); // name.setPower(0%-100%)
 
 
-  delay(500);
+  delay(0);
 
 }
