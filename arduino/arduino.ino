@@ -1,38 +1,52 @@
+#include <Arduino.h>
+// #include <ArduinoCrashMonitor.h>
 #include "GrowController/GrowController.cpp"
 // #include "Wifi/Wifi.cpp"
 
 using namespace GrowController;
+// using namespace Watchdog;
 
-char ssid[] = "Chez du Roxanne";
-char password[] = "goofnugget";
+// char ssid[] = ""; // WIFI SSID
+// char password[] = ""; // WIFI PASSWORD
 
-
-GrowController::GrowController *growController; // created as pointer so it can be "newed" later, check this assumption
 
 void setup() {
-  // startWifi(*ssid, *password);
+  Serial.available();
+  Serial.begin(115200);
 
-  int noSerial = 0;
-  while (!Serial) { };
-  Serial.begin(9600);
+  GrowController::GrowController growController;
 
-  growController = new GrowController::GrowController();
-  growController->setup();
-  growController->setTargetTemp(70);
-  // no serial.print statements can go here
+  // CrashMonitor::begin();
+  // // // Dump any crash reports to the serial port.
+  // CrashMonitor::dump(Serial);
+  // // // startWifi(*ssid, *password);
+  // //
+  // if (CrashMonitor::isFull()) {
+  //   // We've stored as many crash reports as we can. Clear out the old ones so
+  //   // we can have room for new ones.
+  //   Serial.println(F("CrashMonitor report storage full."));
+  //   Serial.println(F("Clearing crash reports from EEPROM ..."));
+  //   CrashMonitor::clear();
+  // }
+  // //
+  // // // Enable the watchdog timer with a timeout of 2 seconds.
+  // CrashMonitor::enableWatchdog(Watchdog::CrashMonitor::Timeout_8s);
+
+  // Serial.println("Starting");
+
+  unsigned int currentLoop = 0;
+
+  while (true) {
+    if (currentLoop == 0 || currentLoop % 1 == 0) {
+      Serial.print("looping: ");
+      Serial.println(currentLoop);
+    }
+    currentLoop++;
+    growController.update();
+    delay(500);
+  }
+
+  return 0;
 }
 
-
-int currentLoop = 0;
-
-void loop() {
-
-  // put your main code here, to run repeatedly:
-  Serial.print("looping ");
-  Serial.println(currentLoop++);
-  growController->update();
-
-
-  delay(0);
-
-}
+void loop() {};

@@ -15,11 +15,17 @@ namespace GrowController {
       ) : movingAverage(movingAverageCount) {
         this->inputChannel = inputChannel;
         this->inputType = inputType;
+        this->movingAverage.begin();
         pinMode(inputChannel, INPUT); // temp sensor
       };
-      Sensor() : movingAverage(0) {}
+      sensor(int inputChannel, int movingAverageCount) {
+        Sensor(inputChannel, PortType::analog, movingAverageCount);
+      }
+      Sensor() : movingAverage(0) {
+        this->movingAverage.begin();
+      }
 
-      virtual update() {
+      update() {
         switch(this->inputType) {
           case analog:
             this->currentValue = analogRead(this->inputChannel);
@@ -28,16 +34,16 @@ namespace GrowController {
             this->currentValue = digitalRead(this->inputChannel);
             break;
         }
+
+        this->movingAverage.reading(this->currentValue);
       };
 
-      virtual float getValue() {
-        // Serial.print("this->currentValue: ");
-        // Serial.println(this->currentValue);
-
+      float getValue() {
         return this->currentValue;
       };
 
-      virtual float getMovingAverage() {
+      float getMovingAverage() {
+        Serial.println("wrong moving avg");
         return this->movingAverage.getAvg();
       }
 
@@ -49,6 +55,7 @@ namespace GrowController {
       PortType inputType;
       int inputChannel;
       float currentValue;
+    protected:
       movingAvgFloat movingAverage;
   };
 }

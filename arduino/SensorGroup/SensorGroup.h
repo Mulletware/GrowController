@@ -1,22 +1,26 @@
 #ifndef SENSOR_GROUP_H
 #define SENSOR_GROUP_H
-#include <movingAvgFloat.h>
+#include <movingAvg.h>
+#include <Array.h>
 #include "../Sensor/Sensor.h"
 
 namespace GrowController {
 
-  template <class SensorType, int MAX_SENSORS = 16> class SensorGroup {
+  template <typename SensorType, int MAX_SENSORS = 8>
+  class SensorGroup {
     public:
       SensorGroup(
-        SensorType sensors[],
+        int sensorPins[],
         int sensorCount,
-        int movingAverageCount = 20
-      ) : movingAverage(movingAverageCount) {
+        int movingAverageCount = 200
+      ) : movingAverage(movingAverageCount)
+      {
         this->sensorCount = sensorCount;
+        this->movingAverage.begin();
 
-        for(int i = 0; i < sensorCount; i++) {
-          this->sensors.push_back(sensors[i]);
-          this->sensors[i].update();
+        for(int i = 0; i < min(MAX_SENSORS, sensorCount); i++) {
+          SensorType sensor(sensorPins[i]);
+          this->sensors[i] = sensor;
         }
       }
 
@@ -26,7 +30,7 @@ namespace GrowController {
         }
       }
 
-      float getValue() {
+      int getValue() {
         float total = 0;
 
         for(int i = 0; i < this->sensorCount; i++) {
@@ -36,20 +40,21 @@ namespace GrowController {
         return total / this->sensorCount;
       }
 
-      float getMovingAverage() {
+      int getMovingAverage() {
         float total = 0;
 
         for(int i = 0; i < this->sensorCount; i++) {
-          total += this->sensors[i].getMovingAverage();
+          float value = this->sensors[i].getMovingAverage();
+          total += value;
         }
 
         return total / this->sensorCount;
       }
 
     private:
-      Array<SoilMoistureSensor, MAX_SENSORS> sensors;
+      SensorType sensors[MAX_SENSORS];
       int sensorCount;
-      movingAvgFloat movingAverage;
+      movingAvg movingAverage;
   };
 }
 

@@ -1,130 +1,167 @@
-#include "../TemperatureSensor/TemperatureSensor.cpp"
-#include "../TemperatureHumiditySensor/TemperatureHumiditySensor.cpp"
+#include <Adafruit_AHTX0.h>
+#include <M2M_LM75A.h>
+// #include "../TemperatureSensor/TemperatureSensor.cpp"
+#include "../TemperatureHumiditySensor/TemperatureHumiditySensor.h"
 #include "../DummySensor/DummySensor.cpp"
 #include "../TemperatureSensor/enums.h"
-#include "../SoilMoistureSensor/SoilMoistureSensor.cpp"
-#include "../SensorGroup/SensorGroup.cpp"
-#include "../Relay/Relay.cpp"
-#include "../RealTimeClock/RealTimeClock.cpp"
-#include "../VariableWattageFan/VariableWattageFan.cpp"
-// #include "GrowController.h"
+#include "../SoilMoistureSensor/SoilMoistureSensor.h"
+#include "../SoilMoistureSensorGroup/SoilMoistureSensorGroup.h"
+#include "../Relay/Relay.h"
+#include "../RealTimeClock/RealTimeClock.h"
+#include "../VariableWattageFan/VariableWattageFan.h"
+#include "../WateringValveDevice/WateringValveDevice.h"
+#include "../WateringScheme/WateringScheme.h"
+#include "../LightingScheme/LightingScheme.h"
 
+#define DEFAULT_TARGET_TEMP 22.0
 
-#include <RBDdimmer.h>
-
-int targetTemp = 70;
-
+M2M_LM75A lm75a;
 
 namespace GrowController {
 
-  int gotTemp = 0;
-
+  int smSensors[] = { A0, A1, A2, A3, A4 };
 
   class GrowController {
+
+    float
+      targetTemp = DEFAULT_TARGET_TEMP,
+      targetVPD = 1.0,
+      targetSoilMoisture = 89.0,
+      multiplier = 4;
+      // variance = 1.00; //variance should be calculated in a language that deals with large numbers more easily
+
+    // Devies
+    VariableWattageFan fan; // must come first
+    WateringValveDevice wateringValve;
+    Relay heater;
+    Relay lights;
+
+    // Sensors
+    TemperatureHumiditySensor tempHumSensor;
+    SoilMoistureSensorGroup soilMoistureSensors;
+
+    // I2C Sensors
+    RealTimeClock clock;
+    DummySensor dummyTempSensor;
+
+    // // bool isVPDControlled = true;
+
+    // control schemes
+    WateringScheme wateringScheme;
+    LightingScheme lightingScheme;
+
+    tmElements_t lightsOn;
+    tmElements_t lightsOff;
+
     public:
-      GrowController() :
-      fan(30),
-      // tempSensor(28),
-      // tempHumSensor(5),
-      soilMoistureSensor(A3),
-      // soilMoistureSensors([]),
-      heater(3)
+      GrowController()
+      :
+
+      // output devices
+      fan(4), // must come first
+      wateringValve(48),
+      heater(50),
+      lights(52),
+
+      // sensors
+      soilMoistureSensors(smSensors, 5),
+      dummyTempSensor(20.9, 21.00, 100),
+
+      // i2c sensors
+      clock(0),
+      tempHumSensor(1),
+
+      // control schemes
+      wateringScheme(&wateringValve),
+      lightingScheme(&lights)
       {
-        // fan.setPower(69);
-        Serial.print("wtf");
+
+        this->lightsOn.Hour = 6;
+        this->lightsOn.Minute = 0;
+        this->lightsOn.Second = 0;
+
+        this->lightsOff.Hour = 0;
+        this->lightsOff.Minute = 0;
+        this->lightsOff.Second = 0;
+
+        // heater.turnOff();
 
       };
 
 
-      setup() {
-        // fan.setPower(65);
-      };
+      setup() { };
 
       update() {
-        // fan.setPower(95);
+        Serial.print("time: ");
+        Serial.print(clock.getTime().Hour);
+        Serial.print(":");
+        Serial.print(clock.getTime().Minute);
+        Serial.print(":");
+        Serial.println(clock.getTime().Second);
 
-        // if (gotTemp == 10) {
-          // tempSensor.update();
-        //   Serial.print("tempSensor->getValue(): ");
-        //   Serial.println(tempSensor.getValue());
-        //   gotTemp = 0;
-        // } else {
-        //   gotTemp++;
-        // }
+        tmElements_t now = clock.getTime();
 
-      //
-      soilMoistureSensor.update();
-      Serial.print("soilMoistureSensor->getValue(): ");
-      Serial.println(soilMoistureSensor.getValue());
+        this->lightingScheme.update(now, this->lightsOn, this->lightsOff);
 
-      clock.update();
+        this->tempHumSensor.update();
+        // this->dummyTempSensor.update();
 
+        // this->soilMoistureSensors.update();
+        // int soilMoisture = this->soilMoistureSensors.getMovingAverage();
+        // float temp = this->dummyTempSensor.getValue();
 
-      dummyTempSensor.update();
-      setFanPower(dummyTempSensor.getValue());
+        float temp = this->tempHumSensor.getAverageTemp();
+        Serial.print("temp: "); Serial.println(temp);
 
-      // tempHumSensor.update();
+        float humidity = this->tempHumSensor.getAverageHumidity();
+        Serial.print("humidity: "); Serial.println(humidity);
 
-      // Serial.print("VPD: ");
-      // Serial.println(tempHumSensor.getVPD());
+        float vpd = this->tempHumSensor.getAverageVPD();
+        Serial.print("vpd: "); Serial.println(vpd);
 
-      // if (tempSensor.getValue() < 70) {
-      //   heater.turnOn();
-      // } else {
-      //   heater.turnOff();
-      // }
-
-      // fan.setPower(70);
-
-      // heater.turnOn();
-
-      // Serial.print("huh");
-
-      // for(int i = 100; i >= 1; i--) {
-      //   this->fan.setPower(i);
-      //   // di.setPower(i);
-      //   Serial.print("Setting power to ");
-      //   Serial.println(i);
-      //   delay(100);
-      // }
-
+        handleFanControl(temp);
       };
 
+      setTargetTemp(float temp) {
+        this->targetTemp = temp;
+      }
+
+      setTargetSoilMoisture(float targetSoilMoisture) {
+        this->targetSoilMoisture = targetSoilMoisture;
+      }
+
+      setTargetVPD(float vpdkPa) {
+        this->targetVPD = vpdkPa;
+      }
+
     private:
-      VariableWattageFan fan;
-      // TemperatureSensor tempSensor;
-      // TemperatureHumiditySensor tempHumSensor;
-      SoilMoistureSensor soilMoistureSensor;
-      // SensorGroup soilMoistureSensors;
-      DummySensor dummyTempSensor;
-      Relay heater;
-      RealTimeClock clock;
 
-      setFanPower(int temp) {
-        int tempDifferential = temp - (targetTemp - 1); // only stop once we've passed the target temp
+      handleFanControl(float temp) {
+        float tempDifferential = temp - targetTemp; // only stop once we've passed the target temp
 
-        Serial.print("dummyTempSensor->getValue(): ");
-        Serial.println(temp);
+        if (tempDifferential < 0) {
+          fan.setPower(0);
+        } else {
 
-        Serial.print("tempDifferential: ");
-        Serial.println(tempDifferential);
+          // double multiplier = 100 / pow(this->variance * 100.00, 3.9); // z = y/(x*100)^3.9
+          // 1.5848931924611143e-06
+          // 0.00000158489
 
-        int fanPower = min(max(tempDifferential * 20, 0), 100);
+          // Serial.print("multiplier: ");
+          // Serial.println(multiplier);
 
-        Serial.print("fan power: ");
-        Serial.println(fanPower);
-        fan.setPower(fanPower);
 
+          float adjustedDifferential = tempDifferential > 0
+            ? (pow(tempDifferential * 100, 3.9) * this->multiplier ) + 1 // y = 0.0004(x^3.9) + 1
+            : 0;
+
+          int fanPower = max(min(adjustedDifferential, 100), 0);
+
+          Serial.print("fanPower: "); Serial.println(fanPower);
+
+          fan.setPower(fanPower);
+        }
       }
   };
 
-  // GrowController::GrowController() {
-  //   // di.begin(NORMAL_MODE, ON_OFF_typedef::OFF);
-  //   // Serial.println("running this");
-  //   // di.setPower(69); // dude!
-  //   // this->fan.begin(NORMAL_MODE, ON_OFF_typedef::ON);
-  //   // fan.setPower(90);
-  //   // delay(2000);
-  //   // this->fan.setPower(90);
-  // }
 }

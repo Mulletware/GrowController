@@ -1,3 +1,3 @@
 #!/usr/bin/zsh
 
-nodemon -w ../arduino -x "killall screen;killall putty; ./make" -e "h cpp ino"
+nodemon -w ../arduino -x "killall screen;killall putty; ./make $1" -e "h cpp ino"

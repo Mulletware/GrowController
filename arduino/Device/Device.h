@@ -23,9 +23,7 @@ namespace GrowController {
         Device(outputChannel, PortType::analog, on, off);
       }
 
-      set(int value) {
-        Serial.print("value: ");
-        Serial.println(value);
+      set(char value) {
         switch (this->output) {
           case PortType::analog:
             analogWrite(this->outputChannel, value);
@@ -35,16 +33,26 @@ namespace GrowController {
             break;
         }
         this->currentValue = value;
+        this->isSet = true;
       }
 
       turnOn() {
-        set(this->ON);
+        if (!this->on || !this->isSet) {
+          this->set(this->ON);
+          this->on = true;
+        }
       }
 
       turnOff() {
-        set(this->OFF);
+        if (this->on || !this->isSet) {
+          this->set(this->OFF);
+          this->on = false;
+        }
       }
 
+      bool isOn() {
+        return this->on;
+      }
 
     private:
       int outputChannel;
@@ -52,8 +60,9 @@ namespace GrowController {
       int currentValue;
       char OFF;
       char ON;
+      bool on = false;
+      bool isSet = false;
   };
-
 
 }
 

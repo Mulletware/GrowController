@@ -9,13 +9,11 @@ namespace GrowController {
         Device(outputChannel, PortType::digital),
         dimmer(outputChannel)
       {
-        this->dimmer.begin(NORMAL_MODE, ON_OFF_typedef::OFF);
+        // NO SERIAL.PRINT STATEMENTS CAN COME BEFORE THIS LINE RUNS OR THE PROGRAM WILL CRASH
+        this->dimmer.begin(NORMAL_MODE, ON_OFF_typedef::OFF); // fuck this line in particular
       }
 
       setPower(int power) {
-        // Serial.print("running parent ");
-        // Serial.println(power);
-
         if (power == 0) {
           this->turnOff();
         } else {
@@ -55,9 +53,9 @@ namespace GrowController {
         this->dimmer.setState(ON_OFF_typedef::OFF);
       }
 
-      turnUp() {}
-
-      turnDown() {}
+      bool isOn() {
+        return Device::isOn();
+      }
 
       dimmerLamp dimmer;
   };

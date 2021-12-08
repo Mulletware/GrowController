@@ -14,9 +14,6 @@ namespace GrowController {
       }
 
       setPower(int power) {
-        Serial.println("power: ");
-        Serial.println(power);
-
         if (this->isStartingFan == true) {
           Serial.println(" is starting fan ");
           if (this->fanStartDelay.isExpired()) {
@@ -35,8 +32,6 @@ namespace GrowController {
           //    run the motor full speed for a split second
           this->startFromStopped(power);
         } else if (power <= 0) {
-          Serial.println(this->getPower());
-          Serial.println(this->fanPower);
           if (this->fanPower > 0) {
             this->fanPower = 0;
             VariableWattageDevice::setPower(0);
@@ -75,7 +70,6 @@ namespace GrowController {
       }
 
       turnOn() {
-        Serial.println(" Turning on fan ");
         if (!VariableWattageDevice::isOn()) {
           VariableWattageDevice::turnOn();
         }

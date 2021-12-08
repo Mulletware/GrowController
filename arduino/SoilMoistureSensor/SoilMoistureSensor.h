@@ -3,8 +3,7 @@
 
 #include <OneWire.h>
 #include <DallasTemperature.h>
-#include <Array.h>
-#include <movingAvgFloat.h>
+#include <movingAvg.h>
 #include "../Sensor/Sensor.h";
 #include "../PortType.h";
 #include "./enums.h";
@@ -14,30 +13,28 @@ namespace GrowController {
   class SoilMoistureSensor : public Sensor {
     public:
       SoilMoistureSensor(
-        int inputChannel = -1, // so that it can be consumed by Array (check this assumption)
+        int inputChannel = 0, // so that it can be consumed by Array (check this assumption)
         int wet = 300,
         int dry = 600,
-        int movingAverageCount = 30
-      ) : Sensor(inputChannel),
-          movingAverage(movingAverageCount)
+        int movingAverageCount = 100
+      ) : Sensor(inputChannel)
       {
         this->dry = dry;
         this->wet = wet;
         this->update();
-        this->movingAverage.begin();
       }
 
       update() {
         Sensor::update();
-        this->movingAverage.reading(Sensor::getValue());
+        Sensor::movingAverage.reading(Sensor::getValue());
       }
 
-      float getValue() {
+      int getValue() {
         return this->mapValue(Sensor::getValue());
       }
 
-      float getMovingAverage() {
-        return this->mapValue(this->movingAverage.getAvg());
+      int getMovingAverage() {
+        return this->mapValue(Sensor::movingAverage.getAvg());
       }
 
       setInputChannel(int inputChannel) {
@@ -46,8 +43,6 @@ namespace GrowController {
 
     private:
       int dry, wet;
-
-      movingAvgFloat movingAverage;
 
       int mapValue(float value) {
         bool isDryHigher = this->dry > this->wet;
