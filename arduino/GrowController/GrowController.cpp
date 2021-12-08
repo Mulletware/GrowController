@@ -1,7 +1,9 @@
 #include <Adafruit_AHTX0.h>
 #include <M2M_LM75A.h>
 // #include "../TemperatureSensor/TemperatureSensor.cpp"
-#include "../TemperatureHumiditySensor/TemperatureHumiditySensor.h"
+#include "../TemperatureHumiditySensorBME280/TemperatureHumiditySensorBME280.h"
+#include "../TemperatureHumiditySensorSHT31/TemperatureHumiditySensorSHT31.h"
+#include "../TemperatureHumiditySensorSI7021/TemperatureHumiditySensorSI7021.h"
 #include "../DummySensor/DummySensor.cpp"
 #include "../TemperatureSensor/enums.h"
 #include "../SoilMoistureSensor/SoilMoistureSensor.h"
@@ -37,7 +39,9 @@ namespace GrowController {
     Relay lights;
 
     // Sensors
-    TemperatureHumiditySensor tempHumSensor;
+    TemperatureHumiditySensorBME280 tempHumSensorBME280;
+    TemperatureHumiditySensorSHT31 tempHumSensorSHT31;
+    TemperatureHumiditySensorSI7021 tempHumSensorSI7021;
     SoilMoistureSensorGroup soilMoistureSensors;
 
     // I2C Sensors
@@ -69,7 +73,9 @@ namespace GrowController {
 
       // i2c sensors
       clock(0),
-      tempHumSensor(1),
+      tempHumSensorBME280(1),
+      tempHumSensorSHT31(2),
+      tempHumSensorSI7021(3),
 
       // control schemes
       wateringScheme(&wateringValve),
@@ -103,21 +109,35 @@ namespace GrowController {
 
         this->lightingScheme.update(now, this->lightsOn, this->lightsOff);
 
-        this->tempHumSensor.update();
-        // this->dummyTempSensor.update();
+        this->tempHumSensorBME280.update();
+        this->tempHumSensorSHT31.update();
+        this->tempHumSensorSI7021.update();
+        // // this->dummyTempSensor.update();
+        //
+        // // this->soilMoistureSensors.update();
+        // // int soilMoisture = this->soilMoistureSensors.getMovingAverage();
+        // // float temp = this->dummyTempSensor.getValue();
 
-        // this->soilMoistureSensors.update();
-        // int soilMoisture = this->soilMoistureSensors.getMovingAverage();
-        // float temp = this->dummyTempSensor.getValue();
-
-        float temp = this->tempHumSensor.getAverageTemp();
+        float temp = this->tempHumSensorBME280.getAverageTemp();
         Serial.print("temp: "); Serial.println(temp);
+        float temp2 = this->tempHumSensorSHT31.getTemperatureC();
+        Serial.print("temp2: "); Serial.println(temp2);
+        float temp3 = this->tempHumSensorSI7021.getTemperatureC();
+        Serial.print("temp3: "); Serial.println(temp3);
 
-        float humidity = this->tempHumSensor.getAverageHumidity();
+        float humidity = this->tempHumSensorBME280.getAverageHumidity();
         Serial.print("humidity: "); Serial.println(humidity);
+        float humidity2 = this->tempHumSensorSHT31.getHumidity();
+        Serial.print("humidity2: "); Serial.println(humidity2);
+        float humidity3 = this->tempHumSensorSI7021.getHumidity();
+        Serial.print("humidity3: "); Serial.println(humidity3);
 
-        float vpd = this->tempHumSensor.getAverageVPD();
+        float vpd = this->tempHumSensorBME280.getAverageVPD();
         Serial.print("vpd: "); Serial.println(vpd);
+        float vpd2 = this->tempHumSensorSHT31.getVPD();
+        Serial.print("vpd2: "); Serial.println(vpd2);
+        float vpd3 = this->tempHumSensorSI7021.getVPD();
+        Serial.print("vpd3: "); Serial.println(vpd3);
 
         handleFanControl(temp);
       };

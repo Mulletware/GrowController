@@ -18,6 +18,7 @@ namespace GrowController {
         this->output = output;
         this->ON = on;
         this->OFF = off;
+        this->turnOff();
       }
       Device(int outputChannel, char on, char off) {
         Device(outputChannel, PortType::analog, on, off);

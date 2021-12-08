@@ -24,13 +24,6 @@ namespace GrowController {
        humidityMovingAvg(movingAverageCount)
        {
         I2CSensor::select();
-        
-        while (!this->bme.begin(0x76, &Wire)) {
-          Serial.println("No BME280 found");
-          delay(60000);
-        }
-
-        Serial.println("BME280 initialized!");
 
         temperatureMovingAvg.begin();
         humidityMovingAvg.begin();
@@ -38,12 +31,6 @@ namespace GrowController {
 
       update() {
         I2CSensor::select();
-
-        this->temperature = bme.readTemperature();
-        this->temperatureMovingAvg.reading(this->temperature * 100);
-
-        this->humidity = bme.readHumidity();
-        this->humidityMovingAvg.reading(this->humidity * 100);
       }
 
       float getTemperatureC() {
@@ -78,10 +65,18 @@ namespace GrowController {
         return this->humidityMovingAvg.getAvg() / 100.00;
       }
 
+      setTemperature(float temp) {
+        this->temperature = temp;
+        this->temperatureMovingAvg.reading(this->temperature * 100);
+      }
+
+      setHumidity(float humidity) {
+        this->humidity = humidity;
+        this->humidityMovingAvg.reading(this->humidity * 100);
+      }
+
     private:
       int inputChannel;
-      Adafruit_BME280 bme;
-      uint32_t delayMs;
       float temperature, humidity;
       movingAvg temperatureMovingAvg, humidityMovingAvg;
   };
