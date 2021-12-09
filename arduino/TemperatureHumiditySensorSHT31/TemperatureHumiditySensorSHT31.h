@@ -32,8 +32,8 @@ namespace GrowController {
         TemperatureHumiditySensor::update();
 
         this->sht.read(true);
+        
         TemperatureHumiditySensor::setTemperature(this->sht.getTemperature());
-
         TemperatureHumiditySensor::setHumidity(this->sht.getHumidity());
       }
 

@@ -24,7 +24,7 @@ namespace GrowController {
        {
         while (!this->bme.begin(0x76, &Wire)) {
           Serial.println("No BME280 found");
-          delay(5000);
+          delay(1000);
         }
 
         Serial.println("BME280 initialized!");

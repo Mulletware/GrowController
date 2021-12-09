@@ -4,6 +4,7 @@
 #include "../TemperatureHumiditySensorBME280/TemperatureHumiditySensorBME280.h"
 #include "../TemperatureHumiditySensorSHT31/TemperatureHumiditySensorSHT31.h"
 #include "../TemperatureHumiditySensorSI7021/TemperatureHumiditySensorSI7021.h"
+#include "../TemperatureHumiditySensorAHT10/TemperatureHumiditySensorAHT10.h"
 #include "../DummySensor/DummySensor.cpp"
 #include "../TemperatureSensor/enums.h"
 #include "../SoilMoistureSensor/SoilMoistureSensor.h"
@@ -42,6 +43,9 @@ namespace GrowController {
     TemperatureHumiditySensorBME280 tempHumSensorBME280;
     TemperatureHumiditySensorSHT31 tempHumSensorSHT31;
     TemperatureHumiditySensorSI7021 tempHumSensorSI7021;
+    TemperatureHumiditySensorAHT10 tempHumSensorAHT10;
+    TemperatureHumiditySensorAHT10 tempHumSensorAHT10b;
+
     SoilMoistureSensorGroup soilMoistureSensors;
 
     // I2C Sensors
@@ -76,6 +80,8 @@ namespace GrowController {
       tempHumSensorBME280(1),
       tempHumSensorSHT31(2),
       tempHumSensorSI7021(3),
+      tempHumSensorAHT10(4),
+      tempHumSensorAHT10b(5),
 
       // control schemes
       wateringScheme(&wateringValve),
@@ -98,20 +104,24 @@ namespace GrowController {
       setup() { };
 
       update() {
-        Serial.print("time: ");
-        Serial.print(clock.getTime().Hour);
-        Serial.print(":");
-        Serial.print(clock.getTime().Minute);
-        Serial.print(":");
-        Serial.println(clock.getTime().Second);
-
         tmElements_t now = clock.getTime();
 
         this->lightingScheme.update(now, this->lightsOn, this->lightsOff);
 
+        Serial.print("time: ");
+        Serial.print(now.Hour);
+        Serial.print(":");
+        Serial.print(now.Minute);
+        Serial.print(":");
+        Serial.println(now.Second);
+
+
         this->tempHumSensorBME280.update();
         this->tempHumSensorSHT31.update();
         this->tempHumSensorSI7021.update();
+        this->tempHumSensorAHT10.update();
+        this->tempHumSensorAHT10b.update();
+
         // // this->dummyTempSensor.update();
         //
         // // this->soilMoistureSensors.update();
@@ -124,6 +134,10 @@ namespace GrowController {
         Serial.print("temp2: "); Serial.println(temp2);
         float temp3 = this->tempHumSensorSI7021.getTemperatureC();
         Serial.print("temp3: "); Serial.println(temp3);
+        float temp4 = this->tempHumSensorAHT10.getTemperatureC();
+        Serial.print("temp4: "); Serial.println(temp4);
+        float temp5 = this->tempHumSensorAHT10b.getTemperatureC();
+        Serial.print("temp5: "); Serial.println(temp5);
 
         float humidity = this->tempHumSensorBME280.getAverageHumidity();
         Serial.print("humidity: "); Serial.println(humidity);
@@ -131,6 +145,10 @@ namespace GrowController {
         Serial.print("humidity2: "); Serial.println(humidity2);
         float humidity3 = this->tempHumSensorSI7021.getHumidity();
         Serial.print("humidity3: "); Serial.println(humidity3);
+        float humidity4 = this->tempHumSensorAHT10.getHumidity();
+        Serial.print("humidity4: "); Serial.println(humidity4);
+        float humidity5 = this->tempHumSensorAHT10b.getHumidity();
+        Serial.print("humidity5: "); Serial.println(humidity5);
 
         float vpd = this->tempHumSensorBME280.getAverageVPD();
         Serial.print("vpd: "); Serial.println(vpd);
@@ -138,6 +156,10 @@ namespace GrowController {
         Serial.print("vpd2: "); Serial.println(vpd2);
         float vpd3 = this->tempHumSensorSI7021.getVPD();
         Serial.print("vpd3: "); Serial.println(vpd3);
+        float vpd4 = this->tempHumSensorAHT10.getVPD();
+        Serial.print("vpd4: "); Serial.println(vpd4);
+        float vpd5 = this->tempHumSensorAHT10b.getVPD();
+        Serial.print("vpd5: "); Serial.println(vpd5);
 
         handleFanControl(temp);
       };
