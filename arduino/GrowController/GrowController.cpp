@@ -5,6 +5,7 @@
 #include "../TemperatureHumiditySensorSHT31/TemperatureHumiditySensorSHT31.h"
 #include "../TemperatureHumiditySensorSI7021/TemperatureHumiditySensorSI7021.h"
 #include "../TemperatureHumiditySensorAHT10/TemperatureHumiditySensorAHT10.h"
+#include "../TemperatureHumiditySensorGroup/TemperatureHumiditySensorGroup.h"
 #include "../DummySensor/DummySensor.cpp"
 #include "../TemperatureSensor/enums.h"
 #include "../SoilMoistureSensor/SoilMoistureSensor.h"
@@ -18,11 +19,13 @@
 
 #define DEFAULT_TARGET_TEMP 22.0
 
-M2M_LM75A lm75a;
 
 namespace GrowController {
 
+  typedef TemperatureHumiditySensorGroup<TemperatureHumiditySensorAHT10> AHTSensorGroup;
+
   int smSensors[] = { A0, A1, A2, A3, A4 };
+  int ahtSensors[] = { 4, 5 };
 
   class GrowController {
 
@@ -45,6 +48,8 @@ namespace GrowController {
     TemperatureHumiditySensorSI7021 tempHumSensorSI7021;
     TemperatureHumiditySensorAHT10 tempHumSensorAHT10;
     TemperatureHumiditySensorAHT10 tempHumSensorAHT10b;
+
+    AHTSensorGroup tempHumSensorGroup;
 
     SoilMoistureSensorGroup soilMoistureSensors;
 
@@ -82,6 +87,8 @@ namespace GrowController {
       tempHumSensorSI7021(3),
       tempHumSensorAHT10(4),
       tempHumSensorAHT10b(5),
+
+      tempHumSensorGroup(ahtSensors, 2),
 
       // control schemes
       wateringScheme(&wateringValve),
@@ -122,46 +129,54 @@ namespace GrowController {
         this->tempHumSensorAHT10.update();
         this->tempHumSensorAHT10b.update();
 
-        // // this->dummyTempSensor.update();
-        //
-        // // this->soilMoistureSensors.update();
-        // // int soilMoisture = this->soilMoistureSensors.getMovingAverage();
-        // // float temp = this->dummyTempSensor.getValue();
+        this->tempHumSensorGroup.update();
+
+        // this->dummyTempSensor.update();
+
+        // this->soilMoistureSensors.update();
+        // int soilMoisture = this->soilMoistureSensors.getMovingAverage();
+        // float temp = this->dummyTempSensor.getValue();
 
         float temp = this->tempHumSensorBME280.getAverageTemp();
         Serial.print("temp: "); Serial.println(temp);
-        float temp2 = this->tempHumSensorSHT31.getTemperatureC();
+        float temp2 = this->tempHumSensorSHT31.getAverageTemp();
         Serial.print("temp2: "); Serial.println(temp2);
-        float temp3 = this->tempHumSensorSI7021.getTemperatureC();
+        float temp3 = this->tempHumSensorSI7021.getAverageTemp();
         Serial.print("temp3: "); Serial.println(temp3);
-        float temp4 = this->tempHumSensorAHT10.getTemperatureC();
+        float temp4 = this->tempHumSensorAHT10.getAverageTemp();
         Serial.print("temp4: "); Serial.println(temp4);
-        float temp5 = this->tempHumSensorAHT10b.getTemperatureC();
+        float temp5 = this->tempHumSensorAHT10b.getAverageTemp();
         Serial.print("temp5: "); Serial.println(temp5);
+        float groupTemp = this->tempHumSensorGroup.getAverageTemp();
+        Serial.print("groupTemp: "); Serial.println(groupTemp);
 
         float humidity = this->tempHumSensorBME280.getAverageHumidity();
         Serial.print("humidity: "); Serial.println(humidity);
-        float humidity2 = this->tempHumSensorSHT31.getHumidity();
+        float humidity2 = this->tempHumSensorSHT31.getAverageHumidity();
         Serial.print("humidity2: "); Serial.println(humidity2);
-        float humidity3 = this->tempHumSensorSI7021.getHumidity();
+        float humidity3 = this->tempHumSensorSI7021.getAverageHumidity();
         Serial.print("humidity3: "); Serial.println(humidity3);
-        float humidity4 = this->tempHumSensorAHT10.getHumidity();
+        float humidity4 = this->tempHumSensorAHT10.getAverageHumidity();
         Serial.print("humidity4: "); Serial.println(humidity4);
-        float humidity5 = this->tempHumSensorAHT10b.getHumidity();
+        float humidity5 = this->tempHumSensorAHT10b.getAverageHumidity();
         Serial.print("humidity5: "); Serial.println(humidity5);
+        float groupHumidity = this->tempHumSensorGroup.getAverageHumidity();
+        Serial.print("groupHumidity: "); Serial.println(groupHumidity);
 
         float vpd = this->tempHumSensorBME280.getAverageVPD();
         Serial.print("vpd: "); Serial.println(vpd);
-        float vpd2 = this->tempHumSensorSHT31.getVPD();
+        float vpd2 = this->tempHumSensorSHT31.getAverageVPD();
         Serial.print("vpd2: "); Serial.println(vpd2);
-        float vpd3 = this->tempHumSensorSI7021.getVPD();
+        float vpd3 = this->tempHumSensorSI7021.getAverageVPD();
         Serial.print("vpd3: "); Serial.println(vpd3);
-        float vpd4 = this->tempHumSensorAHT10.getVPD();
+        float vpd4 = this->tempHumSensorAHT10.getAverageVPD();
         Serial.print("vpd4: "); Serial.println(vpd4);
-        float vpd5 = this->tempHumSensorAHT10b.getVPD();
+        float vpd5 = this->tempHumSensorAHT10b.getAverageVPD();
         Serial.print("vpd5: "); Serial.println(vpd5);
+        float groupVPD = this->tempHumSensorGroup.getAverageVPD();
+        Serial.print("groupVPD: "); Serial.println(groupVPD);
 
-        handleFanControl(temp);
+        handleFanControl(groupTemp);
       };
 
       setTargetTemp(float temp) {

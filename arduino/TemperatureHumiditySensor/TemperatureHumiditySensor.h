@@ -17,7 +17,7 @@ namespace GrowController {
 
     public:
       TemperatureHumiditySensor(
-        int multiplexerAddress,
+        int multiplexerAddress = 0,
         int movingAverageCount = 30
       ) : I2CSensor(multiplexerAddress),
        temperatureMovingAvg(movingAverageCount),
@@ -49,16 +49,16 @@ namespace GrowController {
         return calculateVPD(this->temperature, this->humidity);
       }
 
-      float getAverageVPD() {
-        return calculateVPD(this->getAverageTemp(), this->getAverageHumidity());
-      }
-
       float getAverageTemp() {
         return this->temperatureMovingAvg.getAvg() / 100.00;
       }
 
       float getAverageTempF() {
         return celsiusToF(this->getAverageTemp());
+      }
+
+      float getAverageVPD() {
+        return calculateVPD(this->getAverageTemp(), this->getAverageHumidity());
       }
 
       float getAverageHumidity() {

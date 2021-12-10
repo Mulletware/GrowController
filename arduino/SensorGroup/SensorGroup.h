@@ -30,17 +30,17 @@ namespace GrowController {
         }
       }
 
-      int getValue() {
+      float getValue() {
         float total = 0;
 
         for(int i = 0; i < this->sensorCount; i++) {
           total += this->sensors[i].getValue();
         }
 
-        return total / this->sensorCount;
+        return total / (float)this->sensorCount;
       }
 
-      int getMovingAverage() {
+      float getMovingAverage() {
         float total = 0;
 
         for(int i = 0; i < this->sensorCount; i++) {
@@ -48,7 +48,7 @@ namespace GrowController {
           total += value;
         }
 
-        return total / this->sensorCount;
+        return total / (float)this->sensorCount;
       }
 
     private:

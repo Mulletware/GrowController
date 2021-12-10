@@ -16,6 +16,7 @@ namespace GrowController {
   class TemperatureHumiditySensorAHT10 : public TemperatureHumiditySensor {
 
     public:
+      TemperatureHumiditySensorAHT10() {}
       TemperatureHumiditySensorAHT10(
         int multiplexerAddress,
         int movingAverageCount = 30
