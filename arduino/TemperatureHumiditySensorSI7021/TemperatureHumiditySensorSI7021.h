@@ -18,9 +18,8 @@ namespace GrowController {
 
     public:
       TemperatureHumiditySensorSI7021(
-        int multiplexerAddress,
-        int movingAverageCount = 30
-      ) : TemperatureHumiditySensor(multiplexerAddress, movingAverageCount)
+        int multiplexerAddress
+      ) : TemperatureHumiditySensor(multiplexerAddress)
        {
         while (!this->sensor.begin()) {
           Serial.println("No SI7021 found");

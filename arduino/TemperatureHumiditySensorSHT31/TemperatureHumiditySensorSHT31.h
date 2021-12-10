@@ -18,9 +18,8 @@ namespace GrowController {
 
     public:
       TemperatureHumiditySensorSHT31(
-        int multiplexerAddress,
-        int movingAverageCount = 30
-      ) : TemperatureHumiditySensor(multiplexerAddress, movingAverageCount)
+        int multiplexerAddress
+      ) : TemperatureHumiditySensor(multiplexerAddress, 2000)
        {
         while (!this->sht.begin(0x44)) {
           Serial.println("No SHT31 found");
@@ -32,7 +31,7 @@ namespace GrowController {
         TemperatureHumiditySensor::update();
 
         this->sht.read(true);
-        
+
         TemperatureHumiditySensor::setTemperature(this->sht.getTemperature());
         TemperatureHumiditySensor::setHumidity(this->sht.getHumidity());
       }

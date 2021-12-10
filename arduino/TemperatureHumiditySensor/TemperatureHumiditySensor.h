@@ -1,9 +1,9 @@
 #ifndef TEMPERATURE_HUMIDITY_SENSOR_H
 #define TEMPERATURE_HUMIDITY_SENSOR_H
 
-#include <Adafruit_BME280.h>
-#include <Wire.h>
+#include <AsyncDelay.h>
 #include <movingAvg.h>
+#include <Wire.h>
 
 #include "../PortType.h"
 #include "../I2CSensor/I2CSensor.h"
@@ -18,11 +18,13 @@ namespace GrowController {
     public:
       TemperatureHumiditySensor(
         int multiplexerAddress = 0,
-        int movingAverageCount = 30
+        int readDelayDurationMs = 0,
+        int movingAverageCount = 10
       ) : I2CSensor(multiplexerAddress),
        temperatureMovingAvg(movingAverageCount),
        humidityMovingAvg(movingAverageCount)
        {
+        this->readDelayDurationMs = readDelayDurationMs;
         I2CSensor::select();
 
         temperatureMovingAvg.begin();
@@ -30,7 +32,16 @@ namespace GrowController {
       }
 
       update() {
-        I2CSensor::select();
+        if (this->shouldUpdate()) {
+          I2CSensor::select();
+
+          this->readDelay = AsyncDelay();
+          this->readDelay.start(this->readDelayDurationMs, AsyncDelay::MILLIS);
+        }
+      }
+
+      bool shouldUpdate() {
+        return this->readDelay.isExpired();
       }
 
       float getTemperatureC() {
@@ -77,8 +88,10 @@ namespace GrowController {
 
     private:
       int inputChannel;
+      int readDelayDurationMs;
       float temperature, humidity;
       movingAvg temperatureMovingAvg, humidityMovingAvg;
+      AsyncDelay readDelay;
   };
 
 }

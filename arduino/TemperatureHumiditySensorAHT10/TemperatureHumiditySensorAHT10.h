@@ -18,10 +18,9 @@ namespace GrowController {
     public:
       TemperatureHumiditySensorAHT10() {}
       TemperatureHumiditySensorAHT10(
-        int multiplexerAddress,
-        int movingAverageCount = 30
+        int multiplexerAddress
       )
-      : TemperatureHumiditySensor(multiplexerAddress, movingAverageCount),
+      : TemperatureHumiditySensor(multiplexerAddress, 1000, 5),
         aht(AHTXX_ADDRESS_X38, AHT1x_SENSOR)
        {
         while (!this->aht.begin()) {
@@ -32,10 +31,12 @@ namespace GrowController {
       }
 
       update() {
-        TemperatureHumiditySensor::update();
+        if (TemperatureHumiditySensor::shouldUpdate()) {
+          TemperatureHumiditySensor::update();
 
-        TemperatureHumiditySensor::setTemperature(this->aht.readTemperature());
-        TemperatureHumiditySensor::setHumidity(this->aht.readHumidity());
+          TemperatureHumiditySensor::setTemperature(this->aht.readTemperature());
+          TemperatureHumiditySensor::setHumidity(this->aht.readHumidity());
+        }
       }
 
     private:

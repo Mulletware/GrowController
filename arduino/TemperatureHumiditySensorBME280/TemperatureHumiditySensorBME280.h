@@ -18,9 +18,8 @@ namespace GrowController {
 
     public:
       TemperatureHumiditySensorBME280(
-        int multiplexerAddress,
-        int movingAverageCount = 30
-      ) : TemperatureHumiditySensor(multiplexerAddress, movingAverageCount)
+        int multiplexerAddress
+      ) : TemperatureHumiditySensor(multiplexerAddress)
        {
         while (!this->bme.begin(0x76, &Wire)) {
           Serial.println("No BME280 found");
@@ -32,7 +31,9 @@ namespace GrowController {
 
       update() {
         TemperatureHumiditySensor::update();
+
         TemperatureHumiditySensor::setTemperature(this->bme.readTemperature());
+        
         TemperatureHumiditySensor::setHumidity(
           this->humidity = this->bme.readHumidity()
         );
