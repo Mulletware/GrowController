@@ -5,10 +5,19 @@
 #include <DS1307RTC.h>
 
 namespace GrowController {
+  float calculateVPSat(float temperature) {
+    return (610.7 * pow(10,((7.5 * temperature) / (237.3 + temperature))))
+      / 1000;
+  }
+
   float calculateVPD(float temperature, float humidity) {
-    long double dividend = ((7.5 * (long)temperature) / (237.3 + (long)temperature));
-    long double divisor = 1000 * (long double)(humidity / 100);
-    return (610.7 * pow(10, dividend) / divisor);
+    long double dividend = ((7.5 * temperature) / (237.3 + temperature));
+    return calculateVPSat(temperature) * (humidity / 100.00);
+  }
+
+  float calculateHumidity(float temperature, float VPD) {
+    float VPSat = calculateVPSat(temperature);
+    return VPD / VPSat * 100;
   }
 
   float celsiusToF(float celsius) {

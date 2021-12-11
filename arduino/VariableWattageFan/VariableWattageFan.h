@@ -1,5 +1,7 @@
+#ifndef VARIABLE_WATTAGE_FAN_H
+#define VARIABLE_WATTAGE_FAN_H
 #include <AsyncDelay.h>
-#include "../VariableWattageDevice/VariableWattageDevice.cpp";
+#include "../VariableWattageDevice/VariableWattageDevice.h";
 
 namespace GrowController {
 
@@ -15,7 +17,6 @@ namespace GrowController {
 
       setPower(int power) {
         if (this->isStartingFan == true) {
-          Serial.println(" is starting fan ");
           if (this->fanStartDelay.isExpired()) {
             this->isStartingFan = false;
             this->fanStartDelay = AsyncDelay();
@@ -35,6 +36,9 @@ namespace GrowController {
           if (this->fanPower > 0) {
             this->fanPower = 0;
             VariableWattageDevice::setPower(0);
+
+            this->turnOffDelay = AsyncDelay();
+            this->turnOffDelay.start(30000, AsyncDelay::MILLIS);
           }
           if (this->isOn()) {
             this->turnOff();
@@ -53,15 +57,17 @@ namespace GrowController {
         // do startup routine to ensure motor spins
         // if power is less than 60, rev motor to 75 for 2 seconds (async delay) then set to true power
 
-        this->turnOn();
+        if (this->turnOffDelay.isExpired()) {
+          this->turnOn();
 
-        this->fanPower = power;
-        if (power < 50) {
-          this->isStartingFan = true;
-          this->fanStartDelay.start(300, AsyncDelay::MILLIS);
-          VariableWattageDevice::setPower(this->mapPower(50));
-        } else {
-          VariableWattageDevice::setPower(this->mapPower(power));
+          this->fanPower = power;
+          if (power < 50) {
+            this->isStartingFan = true;
+            this->fanStartDelay.start(300, AsyncDelay::MILLIS);
+            VariableWattageDevice::setPower(this->mapPower(50));
+          } else {
+            VariableWattageDevice::setPower(this->mapPower(power));
+          }
         }
       }
 
@@ -70,9 +76,7 @@ namespace GrowController {
       }
 
       turnOn() {
-        if (!VariableWattageDevice::isOn()) {
-          VariableWattageDevice::turnOn();
-        }
+        VariableWattageDevice::turnOn();
       }
 
       turnOff() {
@@ -88,7 +92,10 @@ namespace GrowController {
       int low, high, currentPower;
       int fanPower = 0;
       AsyncDelay fanStartDelay;
+      AsyncDelay turnOffDelay;
       bool isStartingFan;
   };
 
 }
+
+#endif

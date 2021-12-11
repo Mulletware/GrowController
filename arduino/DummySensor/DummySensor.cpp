@@ -4,7 +4,7 @@ namespace GrowController {
 
   class DummySensor {
     public:
-      DummySensor(float low = 69.90, float high = 70.4, int persistence = 1)
+      DummySensor(float low = 69.90, float high = 70.4, int persistence = 0)
       {
         this->low = low;
         this->high = high;

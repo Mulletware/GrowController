@@ -2,7 +2,7 @@
 #include <DallasTemperature.h>
 #include <movingAvgFloat.h>
 #include "../Sensor/Sensor.h";
-#include "../PortType.h";
+#include "../Types.h";
 #include "./enums.h";
 
 namespace GrowController {

@@ -5,7 +5,7 @@
 #include <Wire.h>
 #include <movingAvg.h>
 
-#include "../PortType.h"
+#include "../Types.h"
 #include "../TemperatureHumiditySensor/TemperatureHumiditySensor.h"
 #include "../I2CSensor/I2CSensor.h"
 #include "../util.h";
@@ -33,7 +33,7 @@ namespace GrowController {
         TemperatureHumiditySensor::update();
 
         TemperatureHumiditySensor::setTemperature(this->bme.readTemperature());
-        
+
         TemperatureHumiditySensor::setHumidity(
           this->humidity = this->bme.readHumidity()
         );

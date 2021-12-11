@@ -10,13 +10,20 @@ namespace GrowController {
         Device(outputChannel, PortType::digital, LOW, HIGH) {}
 
       turnOn() {
-        Device::turnOn();
+        if (!this->isOn) {
+          Device::turnOn();
+          this->isOn = true;
+        }
       }
 
       turnOff() {
-        Device::turnOff();
+        if (this->isOn) {
+          Device::turnOff();
+          this->isOn = false;
+        }
       }
 
+      bool isOn = false;
   };
 
 }

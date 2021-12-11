@@ -1,6 +1,6 @@
 #ifndef WATERING_SCHEME
 #define WATERING_SCHEME
-#include "../WateringValveDevice/WateringValveDevice.cpp"
+#include "../WateringValveDevice/WateringValveDevice.h"
 
 namespace GrowController {
 

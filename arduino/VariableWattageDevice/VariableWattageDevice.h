@@ -1,9 +1,11 @@
+#ifndef VARIABLE_WATTAGE_DEVICE_H
+#define VARIABLE_WATTAGE_DEVICE_H
 #include <RBDdimmer.h>
 #include "../Device/Device.h"
 
 namespace GrowController {
 
-  class VariableWattageDevice : Device {
+  class VariableWattageDevice : public Device {
     public:
       VariableWattageDevice(int outputChannel) :
         Device(outputChannel, PortType::digital),
@@ -25,7 +27,7 @@ namespace GrowController {
         }
       }
 
-      getPower() {
+      int getPower() {
         return this->dimmer.getPower();
       }
 
@@ -61,3 +63,5 @@ namespace GrowController {
   };
 
 }
+
+#endif

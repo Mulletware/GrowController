@@ -1,5 +1,5 @@
-#ifndef WATERING_VALVE_DEVICE
-#define WATERING_VALVE_DEVICE
+#ifndef WATERING_VALVE_DEVICE_H
+#define WATERING_VALVE_DEVICE_H
 #include <AsyncDelay.h>
 #include "../Relay/Relay.h";
 
@@ -32,11 +32,11 @@ namespace GrowController {
             AsyncDelay::MILLIS
           );
 
-          if (!Relay::isOn()) {
+          if (!Relay::isOn) {
             Relay::turnOn();
           }
         } else if (this->waterOnDelay.isExpired()) {
-          if (Relay::isOn()) {
+          if (Relay::isOn) {
             this->turnOff();
           }
         }

@@ -1,7 +1,7 @@
 #ifndef DEVICE_H
 #define DEVICE_H
 
-#include "../PortType.h"
+#include "../Types.h"
 
 namespace GrowController {
 

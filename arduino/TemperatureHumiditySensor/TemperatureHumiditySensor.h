@@ -5,7 +5,7 @@
 #include <movingAvg.h>
 #include <Wire.h>
 
-#include "../PortType.h"
+#include "../Types.h"
 #include "../I2CSensor/I2CSensor.h"
 #include "../util.h";
 

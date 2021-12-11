@@ -5,7 +5,7 @@
 #include <TimeLib.h>
 #include <Wire.h>
 #include "../I2CSensor/I2CSensor.h";
-#include "../PortType.h";
+#include "../Types.h";
 
 namespace GrowController {
   const char *monthName[12] = {

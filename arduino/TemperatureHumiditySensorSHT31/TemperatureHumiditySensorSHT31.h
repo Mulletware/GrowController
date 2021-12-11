@@ -6,7 +6,7 @@
 
 #include "SHT31.h"
 
-#include "../PortType.h"
+#include "../Types.h"
 #include "../TemperatureHumiditySensor/TemperatureHumiditySensor.h"
 #include "../util.h";
 
