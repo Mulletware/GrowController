@@ -20,7 +20,7 @@ namespace GrowController {
       TemperatureHumiditySensorAHT10(
         int multiplexerAddress
       )
-      : TemperatureHumiditySensor(multiplexerAddress, 1000, 5),
+      : TemperatureHumiditySensor(multiplexerAddress, 2000, 5),
         aht(AHTXX_ADDRESS_X38, AHT1x_SENSOR)
        {
         while (!this->aht.begin()) {

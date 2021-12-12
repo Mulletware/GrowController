@@ -44,6 +44,13 @@ namespace GrowController {
     return isAfter(time, start) && isBefore(time, end);
   }
 
+  bool isDay(tmElements_t time, tmElements_t start, tmElements_t end) {
+    if (isAfter(start, end)) { // turns off first
+      return !isBetween(time, end, start);
+    } else {
+      return isBetween(time, start, end);
+    }
+  }
 
 
   // multiplexer
