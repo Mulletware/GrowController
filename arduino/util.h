@@ -2,7 +2,8 @@
 #define UTIL_H
 #include <Arduino.h>
 #include <math.h>
-#include <DS1307RTC.h>
+// #include <DS1307RTC.h>
+#include <DS3232RTC.h>
 
 namespace GrowController {
   float calculateVPSat(float temperature) {

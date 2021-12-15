@@ -1,5 +1,5 @@
-#ifndef WATERING_SCHEME
-#define WATERING_SCHEME
+#ifndef WATERING_SCHEME_H
+#define WATERING_SCHEME_H
 #include "../WateringValveDevice/WateringValveDevice.h"
 
 namespace GrowController {

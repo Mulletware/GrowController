@@ -1,7 +1,7 @@
 #ifndef REALTIMECLOCK_h
 #define REALTIMECLOCK_h
 
-#include <DS1307RTC.h>
+#include <DS3232RTC.h>
 #include <TimeLib.h>
 #include <Wire.h>
 #include "../I2CSensor/I2CSensor.h";
@@ -15,16 +15,14 @@ namespace GrowController {
 
   class RealTimeClock : I2CSensor {
     public:
-      // RealTimeClock();
-
       RealTimeClock(int multiplexerAddress)
         : I2CSensor(multiplexerAddress)
       {
         I2CSensor::select();
-        if(this->init() && RTC.write(this->tm)) { }
+        this->init();
       }
 
-      bool init() {
+      init() {
         int Hour, Min, Sec;
 
         if (sscanf(__TIME__, "%d:%d:%d", &Hour, &Min, &Sec) != 3) return false;
@@ -49,12 +47,10 @@ namespace GrowController {
         this->tm.Month = monthIndex + 1;
         this->tm.Year = CalendarYrToTm(Year);
 
-        return true;
+        RTC.set(makeTime(this->tm));
       }
 
       tmElements_t getTime() {
-        // this->update();
-        // return this->currentValue;
         I2CSensor::select();
         RTC.read(this->tm);
         return this->tm;
