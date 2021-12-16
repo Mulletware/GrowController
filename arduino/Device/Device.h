@@ -24,7 +24,7 @@ namespace GrowController {
         Device(outputChannel, PortType::analog, on, off);
       }
 
-      set(char value) {
+      void set(char value) {
         switch (this->output) {
           case PortType::analog:
             analogWrite(this->outputChannel, value);
@@ -37,14 +37,14 @@ namespace GrowController {
         this->isSet = true;
       }
 
-      turnOn() {
+      void turnOn() {
         if (!this->on || !this->isSet) {
           this->set(this->ON);
           this->on = true;
         }
       }
 
-      turnOff() {
+      void turnOff() {
         if (this->on || !this->isSet) {
           this->set(this->OFF);
           this->on = false;

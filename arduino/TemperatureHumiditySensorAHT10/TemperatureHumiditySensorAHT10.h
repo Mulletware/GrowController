@@ -1,7 +1,6 @@
 #ifndef TEMPERATURE_HUMIDITY_SENSOR_AHT10_H
 #define TEMPERATURE_HUMIDITY_SENSOR_AHT10_H
 
-#include <Wire.h>
 #include <movingAvg.h>
 
 #include <AHTxx.h>

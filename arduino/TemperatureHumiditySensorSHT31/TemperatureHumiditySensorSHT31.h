@@ -1,7 +1,6 @@
 #ifndef TEMPERATURE_HUMIDITY_SENSOR_SHT31_H
 #define TEMPERATURE_HUMIDITY_SENSOR_SHT31_H
 
-#include <Wire.h>
 #include <movingAvg.h>
 
 #include "SHT31.h"

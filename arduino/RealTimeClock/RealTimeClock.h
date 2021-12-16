@@ -1,5 +1,5 @@
-#ifndef REALTIMECLOCK_h
-#define REALTIMECLOCK_h
+#ifndef REALTIMECLOCK_H
+#define REALTIMECLOCK_H
 
 #include <DS3232RTC.h>
 #include <TimeLib.h>

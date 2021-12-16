@@ -12,6 +12,7 @@
 #include "../RealTimeClock/RealTimeClock.h"
 #include "../VariableWattageFan/VariableWattageFan.h"
 #include "../WateringValveDevice/WateringValveDevice.h"
+#include "../Switch/Switch.h"
 #include "../WateringScheme/WateringScheme.h"
 #include "../LightingScheme/LightingScheme.h"
 #include "../AirScheme/AirScheme.h"
@@ -38,10 +39,10 @@ namespace GrowController {
 
     // Devies
     VariableWattageFan fan; // must come first
-    WateringValveDevice wateringValve;
     Relay heater;
     Relay lights;
-    Relay humidifier;
+    WateringValveDevice wateringValve;
+    Switch humidifier;
 
     // Sensors
     // TemperatureHumiditySensorSHT31 tempHumSensorSHT31;
@@ -50,7 +51,7 @@ namespace GrowController {
 
     // I2C Sensors
     RealTimeClock clock;
-    DummySensor dummyTempSensor;
+    // DummySensor dummyTempSensor;
 
     // control schemes
     WateringScheme wateringScheme;
@@ -64,15 +65,15 @@ namespace GrowController {
       :
 
       // output devices
-      fan(4), // must come first
-      wateringValve(48),
-      heater(50),
-      lights(52),
-      humidifier(46),
+      fan(3), // must come first
+      lights(32),
+      heater(34),
+      wateringValve(40),
+      humidifier(42),
 
       // sensors
       soilMoistureSensors(smSensors, 5),
-      dummyTempSensor(23.9, 24.1),
+      // dummyTempSensor(23.9, 24.1),
 
       // i2c sensors
       clock(0),
@@ -83,36 +84,45 @@ namespace GrowController {
       wateringScheme(&wateringValve),
       lightingScheme(&lights),
       airScheme(&heater, &humidifier, &fan)
-      { };
+      {
+      };
 
       update() {
         tmElements_t now = clock.getTime();
 
-        bool isDayTime = isDay(now, this->lightingSettings.on, this->lightingSettings.off);
+        Serial.print(now.Hour); Serial.print(":");
+        Serial.print(now.Minute); Serial.print(":");
+        Serial.println(now.Second);
+
+        bool isDaytime = isDay(now, this->lightingSettings.on, this->lightingSettings.off);
 
         this->tempHumSensorGroup.update();
         float temp = this->tempHumSensorGroup.getAverageTemp();
 
-        bool isHeatEmergency = temp < isDayTime
-          ? this->tempSettings.day.max
-          : this->tempSettings.night.max;
+        Serial.print("temp: "); Serial.println(temp);
+        Serial.print("this->tempSettings.day.max: "); Serial.println(this->tempSettings.day.max);
+
+        bool isHeatEmergency = temp > (
+          isDaytime
+            ? this->tempSettings.day.max
+            : this->tempSettings.night.max
+        );
 
         if (isHeatEmergency) {
+          Serial.println("Emergency!");
           this->lights.turnOff();
           this->fan.setPower(100);
         } else {
           this->lightingScheme.update(now, this->lightingSettings);
-          this->dummyTempSensor.update();
-
 
           float humidity = this->tempHumSensorGroup.getAverageHumidity();
           float vpd = this->tempHumSensorGroup.getAverageVPD();
 
+          // this->dummyTempSensor.update();
           // float dummyTemp = this->dummyTempSensor.getValue();
 
           airScheme.update(
             temp,
-            // dummyTemp,
             humidity,
             isDay,
             this->tempSettings,

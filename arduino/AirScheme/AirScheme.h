@@ -1,6 +1,7 @@
 #ifndef AIR_SCHEME_H
 #define AIR_SCHEME_H
 #include "../Relay/Relay.h"
+#include "../Switch/Switch.h"
 #include "../VariableWattageFan/VariableWattageFan.h"
 #include "../Types.h"
 
@@ -10,7 +11,7 @@ namespace GrowController {
     public:
       AirScheme(
         Relay *heater,
-        Relay *humidifier,
+        Switch *humidifier,
         VariableWattageFan *fan
       ) {
         this->heater = heater;
@@ -128,7 +129,7 @@ namespace GrowController {
 
     private:
       Relay *heater;
-      Relay *humidifier;
+      Switch *humidifier;
       VariableWattageFan *fan;
       float multiplier = 0.009;
 

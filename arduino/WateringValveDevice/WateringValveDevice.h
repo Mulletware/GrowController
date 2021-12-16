@@ -1,20 +1,20 @@
 #ifndef WATERING_VALVE_DEVICE_H
 #define WATERING_VALVE_DEVICE_H
 #include <AsyncDelay.h>
-#include "../Relay/Relay.h";
+#include "../Switch/Switch.h";
 
 // watering is tricky.
 // we want to deliver a short burst of water and let it settle in before
 // allowing it to be turned on again
 namespace GrowController {
 
-  class WateringValveDevice : Relay {
+  class WateringValveDevice : Switch {
     public:
       WateringValveDevice(
         int outputChannel,
         int wateringDurationMillis = 3000,
         int wateringRestrictedDurationMillis = 30000
-      ) : Relay(outputChannel) {
+      ) : Switch(outputChannel) {
         this->wateringDurationMillis = wateringDurationMillis;
         this->wateringRestrictedDurationMillis = wateringRestrictedDurationMillis;
       }
@@ -32,18 +32,18 @@ namespace GrowController {
             AsyncDelay::MILLIS
           );
 
-          if (!Relay::isOn) {
-            Relay::turnOn();
+          if (!Switch::isOn()) {
+            Switch::turnOn();
           }
         } else if (this->waterOnDelay.isExpired()) {
-          if (Relay::isOn) {
+          if (Switch::isOn()) {
             this->turnOff();
           }
         }
       }
 
       turnOff() {
-        Relay::turnOff();
+        Switch::turnOff();
       }
 
     private:
