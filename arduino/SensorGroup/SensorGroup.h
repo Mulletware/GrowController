@@ -15,16 +15,11 @@ namespace GrowController {
         int movingAverageCount = 200
       ) : movingAverage(movingAverageCount)
       {
-        this->sensorCount = sensorCount;
         this->movingAverage.begin();
-
-        for(int i = 0; i < min(MAX_SENSORS, sensorCount); i++) {
-          SensorType sensor(sensorPins[i]);
-          this->sensors[i] = sensor;
-        }
+        this->updateSensors(sensorPins, sensorCount);
       }
 
-      update() {
+      void update() {
         for(int i = 0; i < this->sensorCount; i++) {
           this->sensors[i].update();
         }
@@ -34,7 +29,11 @@ namespace GrowController {
         float total = 0;
 
         for(int i = 0; i < this->sensorCount; i++) {
-          total += this->sensors[i].getValue();
+          float value = this->sensors[i].getValue();
+
+          if (this->sensors[i].isValid) {
+            total += value;
+          }
         }
 
         return total / (float)this->sensorCount;
@@ -45,10 +44,29 @@ namespace GrowController {
 
         for(int i = 0; i < this->sensorCount; i++) {
           float value = this->sensors[i].getMovingAverage();
-          total += value;
+
+          Serial.print("isValid:"); Serial.print(this->sensors[i].isValid ? "true" : "false");
+          Serial.print("this->sensors[");
+          Serial.print(i);
+          Serial.print("].getValue");
+          Serial.println(this->sensors[i].getValue());
+
+          if (this->sensors[i].isValid) {
+            total += value;
+          }
         }
 
         return total / (float)this->sensorCount;
+      }
+
+      void updateSensors(int sensorPins[], int sensorCount) {
+        this->sensorCount = sensorCount;
+
+        int total = min(MAX_SENSORS, sensorCount);
+        for(int i = 0; i < total; i++) {
+          SensorType sensor(sensorPins[i]);
+          this->sensors[i] = sensor;
+        }
       }
 
     private:

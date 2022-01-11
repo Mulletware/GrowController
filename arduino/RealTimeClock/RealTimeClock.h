@@ -4,6 +4,7 @@
 #include <DS3232RTC.h>
 #include <TimeLib.h>
 #include <Wire.h>
+#include <avr/wdt.h>
 #include "../I2CSensor/I2CSensor.h";
 #include "../Types.h";
 
@@ -15,27 +16,30 @@ namespace GrowController {
 
   class RealTimeClock : I2CSensor {
     public:
-      RealTimeClock(int multiplexerAddress)
+      RealTimeClock(int multiplexerAddress, bool shouldSetTime = false)
         : I2CSensor(multiplexerAddress)
       {
         I2CSensor::select();
-        this->init();
+
+        if (shouldSetTime) {
+          this->setTime();
+        }
       }
 
-      init() {
+      setTime() {
         int Hour, Min, Sec;
 
         if (sscanf(__TIME__, "%d:%d:%d", &Hour, &Min, &Sec) != 3) return false;
-
-        this->tm.Hour = Hour;
-        this->tm.Minute = Min;
-        this->tm.Second = Sec;
 
         char Month[12];
         int Day, Year;
         uint8_t monthIndex;
 
         if (sscanf(__DATE__, "%s %d %d", Month, &Day, &Year) != 3) return false;
+
+        this->tm.Hour = Hour;
+        this->tm.Minute = Min;
+        this->tm.Second = Sec;
 
         for (monthIndex = 0; monthIndex < 12; monthIndex++) {
           if (strcmp(Month, monthName[monthIndex]) == 0) break;
@@ -47,7 +51,9 @@ namespace GrowController {
         this->tm.Month = monthIndex + 1;
         this->tm.Year = CalendarYrToTm(Year);
 
+        Serial.println("Setting time");
         RTC.set(makeTime(this->tm));
+        delay(6000);
       }
 
       tmElements_t getTime() {

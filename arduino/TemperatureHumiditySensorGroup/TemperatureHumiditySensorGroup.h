@@ -18,7 +18,8 @@ namespace GrowController {
         this->sensorCount = sensorCount;
         this->movingAverage.begin();
 
-        for(int i = 0; i < min(MAX_SENSORS, sensorCount); i++) {
+        int total = min(MAX_SENSORS, sensorCount);
+        for(int i = 0; i < total; i++) {
           SensorType sensor(tcaAddresses[i]);
           this->sensors[i] = sensor;
         }
@@ -30,21 +31,12 @@ namespace GrowController {
         }
       }
 
-      float getTemperatureC() {
+      float getTemperature() {
         float total = 0;
 
         for(int i = 0; i < this->sensorCount; i++) {
-          total += this->sensors[i].getTemperatureC();
-        }
+          total += this->sensors[i].getTemperature();
 
-        return total / (float)this->sensorCount;
-      }
-
-      float getTemperatureF() {
-        float total = 0;
-
-        for(int i = 0; i < this->sensorCount; i++) {
-          total += this->sensors[i].getTemperatureF();
         }
 
         return total / (float)this->sensorCount;
@@ -71,23 +63,32 @@ namespace GrowController {
       }
 
       float getAverageTemp() {
+        Serial.println("***************     Getting Average Temp    *********************** ");
         float total = 0;
+        int count = 0;
 
         for(int i = 0; i < this->sensorCount; i++) {
-          total += this->sensors[i].getAverageTemp();
+          float temp = this->sensors[i].getAverageTemp();
+
+          Serial.print("this->sensors[");
+          Serial.print(i);
+          Serial.print("].isValid: ");
+          Serial.println(this->sensors[i].isValid ? "true" : "false");
+
+          if (this->sensors[i].isValid) {
+            total += temp;
+            count++;
+          }
+
+          Serial.print("temp sensor ");
+          Serial.print(i);
+          Serial.print(": ");
+          Serial.println(this->sensors[i].getTemperature());
         }
 
-        return total / (float)this->sensorCount;
-      }
+        this->hasErrors = count != this->sensorCount;
 
-      float getAverageTempF() {
-        float total = 0;
-
-        for(int i = 0; i < this->sensorCount; i++) {
-          total += this->sensors[i].getAverageTempF();
-        }
-
-        return total / (float)this->sensorCount;
+        return total / (float)count;
       }
 
       float getAverageHumidity() {
@@ -109,6 +110,8 @@ namespace GrowController {
 
         return total / (float)this->sensorCount;
       }
+
+      bool hasErrors;
 
     private:
       SensorType sensors[MAX_SENSORS];

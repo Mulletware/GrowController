@@ -4,6 +4,7 @@
 #include <AsyncDelay.h>
 #include <movingAvg.h>
 #include <Wire.h>
+#include <avr/wdt.h>
 
 #include "../Types.h"
 #include "../I2CSensor/I2CSensor.h"
@@ -31,25 +32,27 @@ namespace GrowController {
         humidityMovingAvg.begin();
       }
 
-      update() {
+      void update() {
         if (this->shouldUpdate()) {
           I2CSensor::select();
 
           this->readDelay = AsyncDelay();
           this->readDelay.start(this->readDelayDurationMs, AsyncDelay::MILLIS);
+        } else {
+          Serial.println("Not updating!!");
         }
+      }
+
+      void select() {
+        I2CSensor::select();
       }
 
       bool shouldUpdate() {
         return this->readDelay.isExpired();
       }
 
-      float getTemperatureC() {
+      float getTemperature() {
         return this->temperature;
-      }
-
-      float getTemperatureF() {
-        return celsiusToF(this->getTemperatureC());
       }
 
       float getHumidity() {
@@ -64,10 +67,6 @@ namespace GrowController {
         return this->temperatureMovingAvg.getAvg() / 100.00;
       }
 
-      float getAverageTempF() {
-        return celsiusToF(this->getAverageTemp());
-      }
-
       float getAverageVPD() {
         return calculateVPD(this->getAverageTemp(), this->getAverageHumidity());
       }
@@ -76,18 +75,38 @@ namespace GrowController {
         return this->humidityMovingAvg.getAvg() / 100.00;
       }
 
-      setTemperature(float temp) {
-        this->temperature = temp;
-        this->temperatureMovingAvg.reading(this->temperature * 100);
+      void setTemperature(float temp) {
+        if (this->isValid) {
+          this->temperature = temp;
+          this->temperatureMovingAvg.reading(temp * 100);
+        }
       }
 
-      setHumidity(float humidity) {
-        this->humidity = humidity;
-        this->humidityMovingAvg.reading(this->humidity * 100);
+      void setHumidity(float humidity) {
+        if (this->isValid) {
+          this->humidity = humidity;
+          this->humidityMovingAvg.reading(humidity * 100);
+        }
       }
+
+      void setIsValid(bool valid) {
+        if (valid && !this->isValid) { // going from invalid to valid
+          this->temperatureMovingAvg.reset();
+          this->humidityMovingAvg.reset();
+        }
+
+        this->isValid = valid;
+
+        if (!valid) {
+          this->isInitialized = false; // force reinitialize if invalid values are found
+        }
+      }
+
+      bool
+        isInitialized = true,
+        isValid = true;
 
     private:
-      int inputChannel;
       int readDelayDurationMs;
       float temperature, humidity;
       movingAvg temperatureMovingAvg, humidityMovingAvg;

@@ -15,9 +15,9 @@ namespace GrowController {
       update(tmElements_t time, lightingSettings_t settings) {
 
         if (isDay(time, settings.on, settings.off)) {
-            this->lights->turnOn();
+          this->lights->turnOn();
         } else {
-            this->lights->turnOff();
+          this->lights->turnOff();
         }
 
       }

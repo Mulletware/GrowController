@@ -24,22 +24,39 @@ namespace GrowController {
         this->update();
       }
 
-      update() {
+      void update() {
         Sensor::update();
-        Sensor::movingAverage.reading(Sensor::getValue());
+        int value = Sensor::getValue();
+        if (this->validate(value)) {
+          Sensor::movingAverage.reading(value);
+        } else {
+          Sensor::movingAverage.reset();
+        }
       }
 
       int getValue() {
-        return this->mapValue(Sensor::getValue());
+        int value = Sensor::getValue();
+        Serial.print("value: "); Serial.println(value);
+        this->validate(value);
+        return this->mapValue(value);
       }
 
       int getMovingAverage() {
         return this->mapValue(Sensor::movingAverage.getAvg());
       }
 
-      setInputChannel(int inputChannel) {
+      void setInputChannel(int inputChannel) {
         Sensor::setInputChannel(inputChannel);
       }
+
+      bool validate(int value) {
+        // int mappedValue = this->mapValue(value);
+        // this->isValid = mappedValue != 0 && mappedValue < 100;
+        this->isValid = value < 750 && value > 150;
+        return this->isValid;
+      }
+      
+      bool isValid = true;
 
     private:
       int dry, wet;
@@ -47,13 +64,13 @@ namespace GrowController {
       int mapValue(float value) {
         bool isDryHigher = this->dry > this->wet;
 
-        return max(0, min(100, map(
+        return constrain(map(
           value,
           this->dry,
           this->wet,
           isDryHigher ? 0 : 100,
           isDryHigher ? 100 : 0
-        )));
+        ), 0, 100);
       }
   };
 

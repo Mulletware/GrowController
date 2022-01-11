@@ -69,7 +69,12 @@ namespace GrowController {
         airSettings_t tempSettings,
         airSettings_t humiditySettings
       ) {
-        if (humidity > humiditySettings.max || temp < tempSettings.min) {
+        Serial.print("temp: "); Serial.println(temp);
+        Serial.print("humidity: "); Serial.println(humidity);
+        Serial.print("humiditySettings.max: "); Serial.println(humiditySettings.max);
+        if (humidity > humiditySettings.max ||
+          temp < (tempSettings.min + tempSettings.target) / 2
+        ) {
           this->heater->turnOn();
         } else {
           this->heater->turnOff();
@@ -96,8 +101,6 @@ namespace GrowController {
 
         Serial.print("tempDifferential: "); Serial.println(tempDifferential);
 
-        // delay(1000);
-
         if (tempDifferential <= 0) {
           fan->setPower(0);
         } else {
@@ -116,13 +119,11 @@ namespace GrowController {
             // (pow(tempDifferential * 100, 3.9) * this->multiplier ) + 1; // y = 0.0004(x^3.9) + 1
             (pow(tempDifferential * 100, 3.9) * this->multiplier) + 1; // y = 0.0004(x^3.9) + 1
 
-          int fanPower = max(min(adjustedDifferential, 100), 0);
+          int fanPower = constrain(adjustedDifferential, 0, 100);
 
           Serial.print("fanPower: "); Serial.println(fanPower);
 
-          // fan.setPower(25);
           fan->setPower(fanPower);
-          // delay(500);
         }
       }
 

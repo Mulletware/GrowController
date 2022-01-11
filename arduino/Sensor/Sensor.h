@@ -43,13 +43,14 @@ namespace GrowController {
       };
 
       float getMovingAverage() {
-        Serial.println("wrong moving avg");
         return this->movingAverage.getAvg();
       }
 
       setInputChannel(int inputChannel) {
         this->inputChannel = inputChannel;
       }
+
+    bool isValid = true;
 
     private:
       PortType inputType;

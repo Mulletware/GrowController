@@ -1,12 +1,11 @@
 #ifndef TEMPERATURE_HUMIDITY_SENSOR_AHT10_H
 #define TEMPERATURE_HUMIDITY_SENSOR_AHT10_H
 
-#include <movingAvg.h>
-
 #include <AHTxx.h>
 #include "../Types.h"
 #include "../TemperatureHumiditySensor/TemperatureHumiditySensor.h"
-#include "../util.h";
+#include "../util.h"
+#include <avr/wdt.h>
 
 #define DHTPIN A4;
 
@@ -19,27 +18,55 @@ namespace GrowController {
       TemperatureHumiditySensorAHT10(
         int multiplexerAddress
       )
-      : TemperatureHumiditySensor(multiplexerAddress, 2000, 5),
+      : TemperatureHumiditySensor(multiplexerAddress, 3000, 5),
         aht(AHTXX_ADDRESS_X38, AHT1x_SENSOR)
-       {
-        while (!this->aht.begin()) {
+      {
+        this->multiplexerAddress = multiplexerAddress;
+        this->isInitialized = false;
+        this->init();
+      }
+
+      bool init() {
+        TemperatureHumiditySensor::select();
+
+        if (this->aht.begin()) {
+          this->isInitialized = true;
+          return true;
+        } else {
           Serial.print("No AHT10 found at tca ");
-          Serial.println(multiplexerAddress);
-          delay(1000);
+          Serial.println(this->multiplexerAddress);
+
+          TemperatureHumiditySensor::setIsValid(false);
+          return false;
         }
       }
 
-      update() {
-        if (TemperatureHumiditySensor::shouldUpdate()) {
+       update() {
+        if (!this->isInitialized) {
+          this->init();
+        }
+
+        if (this->isInitialized && TemperatureHumiditySensor::shouldUpdate()) {
           TemperatureHumiditySensor::update();
 
-          TemperatureHumiditySensor::setTemperature(this->aht.readTemperature());
-          TemperatureHumiditySensor::setHumidity(this->aht.readHumidity());
+          float temp = this->aht.readTemperature();
+
+          TemperatureHumiditySensor::setIsValid(this->validate(temp));
+
+          if (this->isValid) {
+            TemperatureHumiditySensor::setTemperature(temp);
+            TemperatureHumiditySensor::setHumidity(this->aht.readHumidity());
+          } 
         }
+      }
+
+      bool validate(float value) {
+        return value != 255.00 && !isNan(value) && value != INFINITY;
       }
 
     private:
       float temperature, humidity;
+      int multiplexerAddress;
       AHTxx aht;
   };
 

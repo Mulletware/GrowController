@@ -4,7 +4,6 @@
 #include "../TemperatureHumiditySensorSI7021/TemperatureHumiditySensorSI7021.h"
 #include "../TemperatureHumiditySensorAHT10/TemperatureHumiditySensorAHT10.h"
 #include "../TemperatureHumiditySensorGroup/TemperatureHumiditySensorGroup.h"
-#include "../DummySensor/DummySensor.cpp"
 #include "../TemperatureSensor/enums.h"
 #include "../SoilMoistureSensor/SoilMoistureSensor.h"
 #include "../SensorGroup/SensorGroup.h"
@@ -17,8 +16,11 @@
 #include "../LightingScheme/LightingScheme.h"
 #include "../AirScheme/AirScheme.h"
 #include "../Types.h"
+// #include <ArduinoCrashMonitor.h>
 
 #define DEFAULT_TARGET_TEMP 22.0
+
+// using namespace Watchdog;
 
 
 namespace GrowController {
@@ -27,14 +29,14 @@ namespace GrowController {
   typedef SensorGroup<SoilMoistureSensor> SoilMoistureSensorGroup;
 
   int smSensors[] = { A0, A1, A2, A3, A4 };
-  int ahtSensors[] = { 1, 2, 3, 4, 5 };
+  int ahtSensors[] = { 2, 3, 4, 5, 6 };
 
   class GrowController {
 
     float
       targetTemp = DEFAULT_TARGET_TEMP,
       targetVPD = 1.0,
-      targetSoilMoisture = 89.0;
+      targetSoilMoisture = 55;
       // variance = 1.00; //variance should be calculated in a language that deals with large numbers more easily
 
     // Devies
@@ -51,7 +53,6 @@ namespace GrowController {
 
     // I2C Sensors
     RealTimeClock clock;
-    // DummySensor dummyTempSensor;
 
     // control schemes
     WateringScheme wateringScheme;
@@ -73,7 +74,6 @@ namespace GrowController {
 
       // sensors
       soilMoistureSensors(smSensors, 5),
-      // dummyTempSensor(23.9, 24.1),
 
       // i2c sensors
       clock(0),
@@ -90,17 +90,31 @@ namespace GrowController {
       update() {
         tmElements_t now = clock.getTime();
 
-        Serial.print(now.Hour); Serial.print(":");
-        Serial.print(now.Minute); Serial.print(":");
-        Serial.println(now.Second);
+        printTime(now);
 
         bool isDaytime = isDay(now, this->lightingSettings.on, this->lightingSettings.off);
 
         this->tempHumSensorGroup.update();
         float temp = this->tempHumSensorGroup.getAverageTemp();
 
+
+        soilMoistureSensors.update();
+        float soilMoisture = soilMoistureSensors.getMovingAverage();
+        wateringScheme.update(soilMoisture, this->targetSoilMoisture);
+
+
         Serial.print("temp: "); Serial.println(temp);
+        Serial.print("this->tempSettings.day.target: "); Serial.println(this->tempSettings.day.target);
+        Serial.print("this->tempSettings.day.min: "); Serial.println(this->tempSettings.day.min);
         Serial.print("this->tempSettings.day.max: "); Serial.println(this->tempSettings.day.max);
+        if (isNan(temp)) {
+          // fatal error
+          Serial.println("Error, no valid temperature found");
+          delay(5000);
+          this->lightingScheme.update(now, this->lightingSettings);
+          this->fan.setPower(100);
+          return;
+        }
 
         bool isHeatEmergency = temp > (
           isDaytime
@@ -118,9 +132,6 @@ namespace GrowController {
           float humidity = this->tempHumSensorGroup.getAverageHumidity();
           float vpd = this->tempHumSensorGroup.getAverageVPD();
 
-          // this->dummyTempSensor.update();
-          // float dummyTemp = this->dummyTempSensor.getValue();
-
           airScheme.update(
             temp,
             humidity,
@@ -128,16 +139,15 @@ namespace GrowController {
             this->tempSettings,
             this->vpdSettings
           );
-
         }
       };
 
-      setTempSettings(dayNightAirSettings_t settings) {
-        this->tempSettings = settings;
+      setTempSettings(dayNightAirSettings_t airSettings) {
+        this->tempSettings = airSettings;
       }
 
-      setVPDSettings(dayNightAirSettings_t settings) {
-        this->vpdSettings = settings;
+      setVPDSettings(dayNightAirSettings_t airSettings) {
+        this->vpdSettings = airSettings;
       }
 
       setWateringSettings(wateringSettings_t wateringSettings) {

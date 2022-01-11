@@ -2,23 +2,31 @@
 #define UTIL_H
 #include <Arduino.h>
 #include <math.h>
-// #include <DS1307RTC.h>
 #include <DS3232RTC.h>
 
 namespace GrowController {
-  float calculateVPSat(float temperature) {
-    return (610.7 * pow(10,((7.5 * temperature) / (237.3 + temperature))))
-      / 1000;
+  bool isNan(int value) { return value != value; }
+  bool isNan(uint8_t value) { return value != value; }
+  bool isNan(uint16_t value) { return value != value; }
+  bool isNan(float value) { return value != value; }
+  bool isNan(long value) { return value != value; }
+  bool isNan(double value) { return value != value; }
+
+  float calculateVPSat(float temperatureC) {
+    return 610.7 * pow(10, ((7.5 * temperatureC) / (237.3 + temperatureC)));
+    // returns Pa
   }
 
-  float calculateVPD(float temperature, float humidity) {
-    long double dividend = ((7.5 * temperature) / (237.3 + temperature));
-    return calculateVPSat(temperature) * (humidity / 100.00);
+  float calculateVPD(float temperatureC, float humidity) {
+    long double dividend = ((7.5 * temperatureC) / (237.3 + temperatureC));
+    return (calculateVPSat(temperatureC) * (1 - (humidity / 100.00))) / 1000;
+    // returns kPa
   }
 
-  float calculateHumidity(float temperature, float VPD) {
-    float VPSat = calculateVPSat(temperature);
-    return VPD / VPSat * 100;
+  float calculateHumidity(float temperatureC, float VPDkPa) {
+    float VPSat = calculateVPSat(temperatureC);
+
+    return 100 - (100 * ((VPDkPa * 1000) / VPSat));
   }
 
   float celsiusToF(float celsius) {
@@ -53,6 +61,23 @@ namespace GrowController {
     }
   }
 
+  void printTime(tmElements_t time, char name[]) {
+    Serial.print(name);
+    Serial.print(": ");
+    Serial.print(time.Hour);
+    Serial.print(":");
+    Serial.print(time.Minute);
+    Serial.print(":");
+    Serial.println(time.Second);
+  }
+
+  void printTime(char name[], tmElements_t time) {
+    printTime(time, name);
+  }
+
+  void printTime(tmElements_t time) {
+    printTime(time, "time");
+  }
 
   // multiplexer
   void tcaSelect(uint8_t i) {

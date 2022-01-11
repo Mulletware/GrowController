@@ -9,21 +9,22 @@ namespace GrowController {
     public:
       I2CSensor() {}
 
-      I2CSensor(int multiplexerPort) {
+      I2CSensor(int multiplexerAddress) {
         this->usesMultiplexer = true;
-        this->multiplexerPort = multiplexerPort;
+        this->multiplexerAddress = multiplexerAddress;
         this->select();
       }
 
       select() {
         if (this->usesMultiplexer == true) {
-          tcaSelect(this->multiplexerPort);
+          tcaSelect(this->multiplexerAddress);
         }
       }
 
+      int multiplexerAddress;
+
     private:
       bool usesMultiplexer = false;
-      int multiplexerPort;
   };
 }
 
