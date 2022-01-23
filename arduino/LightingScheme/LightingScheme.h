@@ -17,6 +17,8 @@ namespace GrowController {
         if (isDay(time, settings.on, settings.off)) {
           this->lights->turnOn();
         } else {
+          Serial.println("Turning off");
+          delay(5000);
           this->lights->turnOff();
         }
 

@@ -46,6 +46,16 @@ namespace GrowController {
         Switch::turnOff();
       }
 
+      setWateringDuration(int wateringDurationMillis = 3000) {
+        this->wateringDurationMillis = wateringDurationMillis;
+        this->waterOnDelay.expire();
+      }
+
+      setWateringRestrictedDuration(int wateringRestrictedDurationMillis = 30000) {
+        this->wateringRestrictedDurationMillis = wateringRestrictedDurationMillis;
+        this->wateringRestrictedDelay.expire();
+      }
+
     private:
       AsyncDelay waterOnDelay, wateringRestrictedDelay;
       int wateringDurationMillis, wateringRestrictedDurationMillis;

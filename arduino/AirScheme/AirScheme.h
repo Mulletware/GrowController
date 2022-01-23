@@ -22,26 +22,26 @@ namespace GrowController {
       update(
         float temp,
         float humidity,
-        bool isDayTime,
+        bool isDaytime,
         dayNightAirSettings_t tempSettings,
         dayNightAirSettings_t vpdSettings
       ) {
-        float targetTemp = isDay
-          ? tempSettings.day.target
-          : tempSettings.night.target;
+        float targetTemp = (
+          isDaytime ? tempSettings.day : tempSettings.night
+        ).target;
 
-        airSettings_t currentVPDSettings = isDay
+        airSettings_t currentVPDSettings = isDaytime
           ? vpdSettings.day
           : vpdSettings.night;
 
-        airSettings_t currentTempSettings = isDay
+        airSettings_t currentTempSettings = isDaytime
           ? tempSettings.day
           : tempSettings.night;
 
         airSettings_t humiditySettings = {
           calculateHumidity(temp, currentVPDSettings.target),
-          calculateHumidity(temp, currentVPDSettings.min),
-          calculateHumidity(temp, currentVPDSettings.max)
+          calculateHumidity(temp, currentVPDSettings.max), // max VPD correlates to min humidity
+          calculateHumidity(temp, currentVPDSettings.min) // min VPD correlates to max humidity
         };
 
         this->handleFanControl(
@@ -72,9 +72,8 @@ namespace GrowController {
         Serial.print("temp: "); Serial.println(temp);
         Serial.print("humidity: "); Serial.println(humidity);
         Serial.print("humiditySettings.max: "); Serial.println(humiditySettings.max);
-        if (humidity > humiditySettings.max ||
-          temp < (tempSettings.min + tempSettings.target) / 2
-        ) {
+        Serial.print("humiditySettings.min: "); Serial.println(humiditySettings.min);
+        if (humidity > humiditySettings.max || temp < tempSettings.min) {
           this->heater->turnOn();
         } else {
           this->heater->turnOff();

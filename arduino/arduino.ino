@@ -13,20 +13,20 @@ using namespace Watchdog;
 
 dayNightAirSettings_t tempSettings = {
   // { target, min, max }
-  { 24.5, 21, 27 }, // day
+  { 25.5, 22.8, 27 }, // day
   { 20, 19, 22 } // night
 };
 
 dayNightAirSettings_t vpdSettings = {
-  { 1.0, 0.9, 1.1 },
-  { 1.1, 0.9, 1.2 }
+  { 1.0, 0.90, 1.05 },
+  { 1.2, 1.1, 1.3 }
 };
 
-wateringSettings_t wateringSettings = { 45, 3000, 30000 };
+wateringSettings_t wateringSettings = { 50, 1000, 20000 };
 
 lightingSettings_t lightingSettings = {
-  { 0, 0, 6 }, // on at 6:00 / 6 am
-  { 0, 0, 0 } // off at 24:00 / midnight
+  { 0, 0, 8 }, // on at 8:00 / 8 am
+  { 0, 0, 22 } // off at 22:00 / 10 pm
 };
 
 

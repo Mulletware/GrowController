@@ -33,12 +33,6 @@ namespace GrowController {
 
   class GrowController {
 
-    float
-      targetTemp = DEFAULT_TARGET_TEMP,
-      targetVPD = 1.0,
-      targetSoilMoisture = 55;
-      // variance = 1.00; //variance should be calculated in a language that deals with large numbers more easily
-
     // Devies
     VariableWattageFan fan; // must come first
     Relay heater;
@@ -100,7 +94,10 @@ namespace GrowController {
 
         soilMoistureSensors.update();
         float soilMoisture = soilMoistureSensors.getMovingAverage();
-        wateringScheme.update(soilMoisture, this->targetSoilMoisture);
+        wateringScheme.update(soilMoisture, this->wateringSettings.target);
+
+        Serial.print("soilMoisture: "); Serial.println(soilMoisture);
+        Serial.print("this->wateringSettings.target: "); Serial.println(this->wateringSettings.target);
 
 
         Serial.print("temp: "); Serial.println(temp);
@@ -116,6 +113,15 @@ namespace GrowController {
           return;
         }
 
+        Serial.print("temp: "); Serial.println(temp);
+
+        Serial.print("isDaytime: "); Serial.println(isDaytime ? "yes" : "no");
+        if (isDaytime) {
+          Serial.print("tempSettings.day.max: "); Serial.println(tempSettings.day.max);
+        } else {
+          Serial.print("tempSettings.night.max: "); Serial.println(tempSettings.night.max);
+        }
+
         bool isHeatEmergency = temp > (
           isDaytime
             ? this->tempSettings.day.max
@@ -126,7 +132,9 @@ namespace GrowController {
           Serial.println("Emergency!");
           this->lights.turnOff();
           this->fan.setPower(100);
+          delay(4000);
         } else {
+          Serial.println("Nominal operation +1");
           this->lightingScheme.update(now, this->lightingSettings);
 
           float humidity = this->tempHumSensorGroup.getAverageHumidity();
@@ -135,7 +143,7 @@ namespace GrowController {
           airScheme.update(
             temp,
             humidity,
-            isDay,
+            isDaytime,
             this->tempSettings,
             this->vpdSettings
           );
@@ -152,6 +160,8 @@ namespace GrowController {
 
       setWateringSettings(wateringSettings_t wateringSettings) {
         this->wateringSettings = wateringSettings;
+        this->wateringValve.setWateringDuration(wateringSettings.onTime);
+        this->wateringValve.setWateringRestrictedDuration(wateringSettings.offTime);
       }
 
       setLightingSettings(lightingSettings_t lightingSettings) {

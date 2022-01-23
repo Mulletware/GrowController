@@ -14,8 +14,8 @@ namespace GrowController {
     public:
       SoilMoistureSensor(
         int inputChannel = 0, // so that it can be consumed by Array (check this assumption)
-        int wet = 300,
-        int dry = 600,
+        int wet = 200,
+        int dry = 700,
         int movingAverageCount = 100
       ) : Sensor(inputChannel)
       {
@@ -50,9 +50,11 @@ namespace GrowController {
       }
 
       bool validate(int value) {
-        // int mappedValue = this->mapValue(value);
-        // this->isValid = mappedValue != 0 && mappedValue < 100;
-        this->isValid = value < 750 && value > 150;
+        Serial.print("value: "); Serial.println(value);
+        int variance = abs(this->wet - this->dry) / 2;
+        this->isValid = value < 750;
+        // value < max(this->wet, this->dry) + variance
+        //   && value > min(this->wet, this->dry) - variance;
         return this->isValid;
       }
       
