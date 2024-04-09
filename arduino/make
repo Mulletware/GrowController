@@ -1,3 +1,9 @@
 #!/usr/bin/zsh
-DEVICE=${1:-'/dev/ttyUSB0'}
-rm -rf /tmp/arduino-*; arduino-cli compile --fqbn arduino:avr:mega && arduino-cli upload -p $DEVICE --fqbn arduino:avr:mega
+
+DEVICE=${1:-`ls /dev/ttyU* | awk 1 | head -n 1`}
+
+echo Flashing to device at $DEVICE
+
+rm -rf /tmp/arduino-*
+
+arduino-cli compile --fqbn arduino:avr:mega && arduino-cli upload -p $DEVICE --fqbn arduino:avr:mega

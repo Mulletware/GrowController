@@ -12,7 +12,7 @@ namespace GrowController {
 
       update(int moistureLevel, int targetMoisture) {
         if (moistureLevel < targetMoisture) {
-          Serial.println("Turning on watering!!!");
+          Serial.println("Turning on watering! !");
           this->water->turnOn();
         } else {
           this->water->turnOff();

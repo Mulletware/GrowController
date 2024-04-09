@@ -1,5 +1,7 @@
 #!/usr/bin/zsh
 
-putty ${1:-"/dev/ttyUSB0"} -serial -sercfg ${2:-"115200"},8,n,1,N &
+DEVICE=`ls /dev/ttyU* | awk 1 | head -n 1`
+echo "DEVICE: $DEVICE"
+putty ${1:-$DEVICE} -serial -sercfg ${3:-"115200"},8,n,1,N -fn "Monospace 15" &
 
 #screen /dev/ttyUSB0 57600
