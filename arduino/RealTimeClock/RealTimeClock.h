@@ -8,64 +8,76 @@
 #include "../I2CSensor/I2CSensor.h";
 #include "../Types.h";
 
-namespace GrowController {
+namespace GrowController
+{
   const char *monthName[12] = {
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-  };
+      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
-  class RealTimeClock : I2CSensor {
-    public:
-      RealTimeClock(int multiplexerAddress, bool shouldSetTime = false)
+  class RealTimeClock : I2CSensor
+  {
+  public:
+    RealTimeClock(int multiplexerAddress, bool shouldSetTime = false)
         : I2CSensor(multiplexerAddress)
+    {
+      I2CSensor::select();
+
+      if (shouldSetTime)
       {
-        I2CSensor::select();
+        this->setTime();
+      }
+    }
 
-        if (shouldSetTime) {
-          this->setTime();
-        }
+    setTime()
+    {
+      int Hour, Min, Sec;
+
+      if (sscanf(__TIME__, "%d:%d:%d", &Hour, &Min, &Sec) != 3)
+        return false;
+
+      char Month[12];
+      int Day, Year;
+      uint8_t monthIndex;
+
+      if (sscanf(__DATE__, "%s %d %d", Month, &Day, &Year) != 3)
+        return false;
+
+      this->tm.Hour = Hour;
+      this->tm.Minute = Min;
+      this->tm.Second = Sec;
+
+      for (monthIndex = 0; monthIndex < 12; monthIndex++)
+      {
+        if (strcmp(Month, monthName[monthIndex]) == 0)
+          break;
       }
 
-      setTime() {
-        int Hour, Min, Sec;
+      if (monthIndex >= 12)
+        return false;
 
-        if (sscanf(__TIME__, "%d:%d:%d", &Hour, &Min, &Sec) != 3) return false;
+      this->tm.Day = Day;
+      this->tm.Month = monthIndex + 1;
+      this->tm.Year = CalendarYrToTm(Year);
 
-        char Month[12];
-        int Day, Year;
-        uint8_t monthIndex;
+      Serial.println("Setting time");
+      RTC.set(makeTime(this->tm));
+      delay(6000);
+    }
 
-        if (sscanf(__DATE__, "%s %d %d", Month, &Day, &Year) != 3) return false;
+    tmElements_t getTime()
+    {
+      I2CSensor::select();
+      RTC.read(this->tm);
+      // Serial.println(String(this->tm.Hour) + ":" + String(this->tm.Minute) + ":" + String(this->tm.Second));
+      // delay(2000);
+      delay(200);
+      return this->tm;
+    }
 
-        this->tm.Hour = Hour;
-        this->tm.Minute = Min;
-        this->tm.Second = Sec;
-
-        for (monthIndex = 0; monthIndex < 12; monthIndex++) {
-          if (strcmp(Month, monthName[monthIndex]) == 0) break;
-        }
-
-        if (monthIndex >= 12) return false;
-
-        this->tm.Day = Day;
-        this->tm.Month = monthIndex + 1;
-        this->tm.Year = CalendarYrToTm(Year);
-
-        Serial.println("Setting time");
-        RTC.set(makeTime(this->tm));
-        delay(6000);
-      }
-
-      tmElements_t getTime() {
-        I2CSensor::select();
-        RTC.read(this->tm);
-        return this->tm;
-      }
-
-    private:
-      float currentValue;
-      temperatureUnit unit;
-      tmElements_t tm;
+  private:
+    float currentValue;
+    temperatureUnit unit;
+    tmElements_t tm;
   };
 
 }

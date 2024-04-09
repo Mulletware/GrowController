@@ -4,120 +4,139 @@
 #include <Array.h>
 #include "../Sensor/Sensor.h"
 
-namespace GrowController {
+namespace GrowController
+{
 
   template <typename SensorType, int MAX_SENSORS = 8>
-  class TemperatureHumiditySensorGroup {
-    public:
-      TemperatureHumiditySensorGroup(
+
+  class TemperatureHumiditySensorGroup
+  {
+
+  public:
+    TemperatureHumiditySensorGroup(
         int tcaAddresses[],
         int sensorCount,
-        int movingAverageCount = 200
-      ) : movingAverage(movingAverageCount)
+        int movingAverageCount = 200) : movingAverage(movingAverageCount)
+    {
+      this->sensorCount = sensorCount;
+      this->movingAverage.begin();
+
+      int total = min(MAX_SENSORS, sensorCount);
+      for (int i = 0; i < total; i++)
       {
-        this->sensorCount = sensorCount;
-        this->movingAverage.begin();
+        SensorType sensor(tcaAddresses[i]);
+        this->sensors[i] = sensor;
+      }
+    }
 
-        int total = min(MAX_SENSORS, sensorCount);
-        for(int i = 0; i < total; i++) {
-          SensorType sensor(tcaAddresses[i]);
-          this->sensors[i] = sensor;
+    update()
+    {
+      for (int i = 0; i < this->sensorCount; i++)
+      {
+        this->sensors[i].update();
+      }
+    }
+
+    float getTemperature()
+    {
+      return getSafeAverageValue(&TemperatureHumiditySensorGroup::getSensorTemp);
+    }
+
+    float getHumidity()
+    {
+      return getSafeAverageValue(&TemperatureHumiditySensorGroup::getSensorHumidity);
+    }
+
+    float getVPD()
+    {
+      return this->getSafeAverageValue(&TemperatureHumiditySensorGroup::getSensorVPD);
+    }
+
+    float getTemp()
+    {
+      return this->getSafeAverageValue(&TemperatureHumiditySensorGroup::getSensorTemp);
+    }
+
+    float getAverageTemp()
+    {
+      return this->getSafeAverageValue(&TemperatureHumiditySensorGroup::getSensorAverageTemp);
+    }
+
+    float getAverageHumidity()
+    {
+      return this->getSafeAverageValue(&TemperatureHumiditySensorGroup::getSensorAverageHumidity);
+    }
+
+    float getAverageVPD()
+    {
+      return this->getSafeAverageValue(&TemperatureHumiditySensorGroup::getSensorAverageVPD);
+    }
+
+    float getSafeAverageValue(float (*callback)(SensorType))
+    {
+      float total = 0;
+      int count = 0;
+
+      for (int i = 0; i < this->sensorCount; i++)
+      {
+        SensorType sensor = this->sensors[i];
+        float value = (*callback)(sensor);
+
+        if (sensor.isValid)
+        {
+          total += value;
+          count++;
         }
       }
 
-      update() {
-        for(int i = 0; i < this->sensorCount; i++) {
-          this->sensors[i].update();
-        }
-      }
+      this->hasErrors = count != this->sensorCount;
 
-      float getTemperature() {
-        float total = 0;
+      return total / (float)count;
+    }
 
-        for(int i = 0; i < this->sensorCount; i++) {
-          total += this->sensors[i].getTemperature();
+    bool hasErrors;
 
-        }
+    static float updateSensor(SensorType sensor)
+    {
+      return sensor.update();
+    }
 
-        return total / (float)this->sensorCount;
-      }
+    static float getSensorHumidity(SensorType sensor)
+    {
+      return sensor.getHumidity();
+    }
 
-      float getHumidity() {
-        float total = 0;
+    static float getSensorTemp(SensorType sensor)
+    {
+      return sensor.getTemp();
+    }
 
-        for(int i = 0; i < this->sensorCount; i++) {
-          total += this->sensors[i].getHumidity();
-        }
+    static float getSensorVPD(SensorType sensor)
+    {
+      return sensor.getVPD();
+    }
 
-        return total / (float)this->sensorCount;
-      }
+    static float getSensorAverageHumidity(SensorType sensor)
+    {
+      return sensor.getAverageHumidity();
+    }
 
-      float getVPD() {
-        float total = 0;
+    static float getSensorAverageTemp(SensorType sensor)
+    {
+      return sensor.getAverageTemp();
+    }
 
-        for(int i = 0; i < this->sensorCount; i++) {
-          total += this->sensors[i].getVPD();
-        }
+    static float getSensorAverageVPD(SensorType sensor)
+    {
+      return sensor.getVPD();
+    }
 
-        return total / (float)this->sensorCount;
-      }
-
-      float getAverageTemp() {
-        Serial.println("***************     Getting Average Temp    *********************** ");
-        float total = 0;
-        int count = 0;
-
-        for(int i = 0; i < this->sensorCount; i++) {
-          float temp = this->sensors[i].getAverageTemp();
-
-          Serial.print("this->sensors[");
-          Serial.print(i);
-          Serial.print("].isValid: ");
-          Serial.println(this->sensors[i].isValid ? "true" : "false");
-
-          if (this->sensors[i].isValid) {
-            total += temp;
-            count++;
-          }
-
-          Serial.print("temp sensor ");
-          Serial.print(i);
-          Serial.print(": ");
-          Serial.println(this->sensors[i].getTemperature());
-        }
-
-        this->hasErrors = count != this->sensorCount;
-
-        return total / (float)count;
-      }
-
-      float getAverageHumidity() {
-        float total = 0;
-
-        for(int i = 0; i < this->sensorCount; i++) {
-          total += this->sensors[i].getAverageHumidity();
-        }
-
-        return total / (float)this->sensorCount;
-      }
-
-      float getAverageVPD() {
-        float total = 0;
-
-        for(int i = 0; i < this->sensorCount; i++) {
-          total += this->sensors[i].getAverageVPD();
-        }
-
-        return total / (float)this->sensorCount;
-      }
-
-      bool hasErrors;
-
-    private:
-      SensorType sensors[MAX_SENSORS];
-      int sensorCount;
-      movingAvg movingAverage;
+  private:
+    SensorType sensors[MAX_SENSORS];
+    int sensorCount;
+    movingAvg movingAverage;
   };
+
 }
 
 #endif

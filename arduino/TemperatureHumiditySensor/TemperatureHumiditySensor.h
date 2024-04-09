@@ -12,105 +12,136 @@
 
 #define DHTPIN A4;
 
-namespace GrowController {
+namespace GrowController
+{
 
-  class TemperatureHumiditySensor : I2CSensor {
+  class TemperatureHumiditySensor : I2CSensor
+  {
 
-    public:
-      TemperatureHumiditySensor(
+  public:
+    TemperatureHumiditySensor(
         int multiplexerAddress = 0,
         int readDelayDurationMs = 0,
-        int movingAverageCount = 10
-      ) : I2CSensor(multiplexerAddress),
-       temperatureMovingAvg(movingAverageCount),
-       humidityMovingAvg(movingAverageCount)
-       {
-        this->readDelayDurationMs = readDelayDurationMs;
-        I2CSensor::select();
+        int movingAverageCount = 10) : I2CSensor(multiplexerAddress),
+                                       temperatureMovingAvg(movingAverageCount),
+                                       humidityMovingAvg(movingAverageCount)
+    {
+      this->readDelayDurationMs = readDelayDurationMs;
+      // I2CSensor::select();
+      this->select();
 
-        temperatureMovingAvg.begin();
-        humidityMovingAvg.begin();
+      temperatureMovingAvg.begin();
+      humidityMovingAvg.begin();
+    }
+
+    void update()
+    {
+      if (this->shouldUpdate())
+      {
+        // I2CSensor::select();
+        this->select();
+
+        this->readDelay = AsyncDelay();
+        this->readDelay.start(this->readDelayDurationMs, AsyncDelay::MILLIS);
+      }
+      else
+      {
+        Serial.println("Not updating!!");
+      }
+    }
+
+    void select()
+    {
+      I2CSensor::select();
+    }
+
+    bool shouldUpdate()
+    {
+      return this->readDelay.isExpired();
+    }
+
+    float getTemperature()
+    {
+      return this->temperature;
+    }
+
+    float getHumidity()
+    {
+      return this->humidity;
+    }
+
+    float getVPD()
+    {
+      return calculateVPD(this->temperature, this->humidity);
+    }
+
+    float getAverageTemp()
+    {
+      return this->temperatureMovingAvg.getAvg() / 100.00;
+    }
+
+    float getAverageVPD()
+    {
+      return calculateVPD(this->getAverageTemp(), this->getAverageHumidity());
+    }
+
+    float getAverageHumidity()
+    {
+      // Serial.println(" * * * * * * *  getting average humidity * * * * * * * * * * * * *");
+
+      // delay(500);
+      float value = humidityMovingAvg.getAvg();
+      // if (isValid)
+      // {
+      //   Serial.println("value: " + String(value));
+      // }
+      return value / 100;
+    }
+
+    void setTemperature(float temp)
+    {
+      if (this->isValid)
+      {
+        this->temperature = temp;
+        this->temperatureMovingAvg.reading(temp * 100);
+      }
+    }
+
+    void setHumidity(float humidity)
+    {
+
+      if (this->isValid)
+      {
+        this->humidity = humidity;
+        this->humidityMovingAvg.reading(humidity * 100);
+      }
+    }
+
+    void setIsValid(bool valid)
+    {
+      if (valid && !isValid)
+      { // going from invalid to valid
+        temperatureMovingAvg.reset();
+        humidityMovingAvg.reset();
       }
 
-      void update() {
-        if (this->shouldUpdate()) {
-          I2CSensor::select();
+      isValid = valid;
 
-          this->readDelay = AsyncDelay();
-          this->readDelay.start(this->readDelayDurationMs, AsyncDelay::MILLIS);
-        } else {
-          Serial.println("Not updating!!");
-        }
+      if (!valid)
+      {
+        isInitialized = false; // force reinitialize if invalid values are found
       }
+    }
 
-      void select() {
-        I2CSensor::select();
-      }
-
-      bool shouldUpdate() {
-        return this->readDelay.isExpired();
-      }
-
-      float getTemperature() {
-        return this->temperature;
-      }
-
-      float getHumidity() {
-        return this->humidity;
-      }
-
-      float getVPD() {
-        return calculateVPD(this->temperature, this->humidity);
-      }
-
-      float getAverageTemp() {
-        return this->temperatureMovingAvg.getAvg() / 100.00;
-      }
-
-      float getAverageVPD() {
-        return calculateVPD(this->getAverageTemp(), this->getAverageHumidity());
-      }
-
-      float getAverageHumidity() {
-        return this->humidityMovingAvg.getAvg() / 100.00;
-      }
-
-      void setTemperature(float temp) {
-        if (this->isValid) {
-          this->temperature = temp;
-          this->temperatureMovingAvg.reading(temp * 100);
-        }
-      }
-
-      void setHumidity(float humidity) {
-        if (this->isValid) {
-          this->humidity = humidity;
-          this->humidityMovingAvg.reading(humidity * 100);
-        }
-      }
-
-      void setIsValid(bool valid) {
-        if (valid && !this->isValid) { // going from invalid to valid
-          this->temperatureMovingAvg.reset();
-          this->humidityMovingAvg.reset();
-        }
-
-        this->isValid = valid;
-
-        if (!valid) {
-          this->isInitialized = false; // force reinitialize if invalid values are found
-        }
-      }
-
-      bool
+    bool
         isInitialized = true,
         isValid = true;
 
-    private:
-      int readDelayDurationMs;
-      float temperature, humidity;
-      movingAvg temperatureMovingAvg, humidityMovingAvg;
-      AsyncDelay readDelay;
+  private:
+    int readDelayDurationMs;
+    float temperature, humidity;
+    movingAvg temperatureMovingAvg, humidityMovingAvg;
+    AsyncDelay readDelay;
   };
 
 }

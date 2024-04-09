@@ -2,28 +2,36 @@
 #define RELAY
 #include "../Device/Device.h"
 
-namespace GrowController {
+namespace GrowController
+{
 
-  class Relay : public Device {
-    public:
-      Relay(int outputChannel) :
-        Device(outputChannel, PortType::digital, LOW, HIGH) {}
+  class Relay : public Device
+  {
+  public:
+    Relay(int outputChannel) : // Device(outputChannel, PortType::digital, LOW, HIGH) {}
+                               Device(outputChannel, PortType::digital, HIGH, LOW)
+    {
+    }
 
-      turnOn() {
-        if (!this->isOn) {
-          Device::turnOn();
-          this->isOn = true;
-        }
+    turnOn()
+    {
+      if (!this->isOn)
+      {
+        Device::turnOn();
+        this->isOn = true;
       }
+    }
 
-      turnOff() {
-        if (this->isOn) {
-          Device::turnOff();
-          this->isOn = false;
-        }
+    turnOff()
+    {
+      if (this->isOn)
+      {
+        Device::turnOff();
+        this->isOn = false;
       }
+    }
 
-      bool isOn = false;
+    bool isOn = false;
   };
 
 }
